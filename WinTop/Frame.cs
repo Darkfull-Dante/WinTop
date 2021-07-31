@@ -8,115 +8,153 @@ namespace WinTop
 {
     class Frame
     {
-        private int width;
-        private int height;
-        private string title;
-        private int usableWidth;
-        private int usableHeight;
-        private string relativeWidth;
-        private string relativeHeight;
-        private int posX;
-        private int posY;
 
-        public static int windowWidth;
-        public static int windowHeight;
+        private static int windowWidth;
+        private static int windowHeight;
+        private const ConsoleColor FRAME_COLOR = ConsoleColor.Cyan;
+        private const ConsoleColor TITLE_COLOR = ConsoleColor.White;
 
         /// <summary>
-        /// Horizontal start position (from left) of the Frame.
+        /// Gets or sets the Width of the frame. Zero to take the rest of the space
         /// </summary>
-        public int PosX
+        public int Width { get; set; }
+
+        /// <summary>
+        /// Gets or sets the height of the frame. Zero to take the rest of the sace
+        /// </summary>
+        public int Height { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Title of the frame. Null for no title
+        /// </summary>
+        public string Title { get; set; }
+
+        /// <summary>
+        /// Gets or sets the horizontal start position of the frame.
+        /// </summary>
+        public int PosX { get; set; }
+
+        /// <summary>
+        /// Gets or sets the vertical start position of the frame.
+        /// </summary>
+        public int PosY { get; set; }
+
+        /// <summary>
+        /// Gets or sets the minimum Width for the frame to appears.
+        /// </summary>
+        public int MinWidth { get; set; }
+
+        /// <summary>
+        /// Gets or sets the minimum height for the frame to appears.
+        /// </summary>
+        public int MinHeight { get; set; }
+
+        public Frame(int width, int height, string title, int posX, int posY, int minWidth, int minHeight)
         {
-            get { return posX; }
-            set { posX = value; }
+            Width = width;
+            Height = height;
+            Title = title;
+            PosX = posX;
+            PosY = posY;
+            MinWidth = minWidth;
+            MinHeight = minHeight;
         }
 
-        /// <summary>
-        /// Vertical start position (from top) of the Frame.
-        /// </summary>
-        public int PosY
+        public static void UpdateFrame(List<Frame> frames)
         {
-            get { return posY; }
-            set { posY = value; }
-        }
+            int tempW = Console.WindowWidth;
+            int tempH = Console.WindowHeight;
 
-        /// <summary>
-        /// width of the frame. Cancels the relativeWidth if set.
-        /// </summary>
-        public int Width
-        {
-            get { return width; }
-            set
+            //check if console window changed size
+            if (windowWidth != Console.WindowWidth || windowHeight != Console.WindowHeight)
             {
-                width = value;
-                usableWidth = Width - 4;
-                relativeWidth = null;
+                //wait
+                System.Threading.Thread.Sleep(1000);
+
+                //update the the new value
+                windowWidth = Console.WindowWidth;
+                windowHeight = Console.WindowHeight;
+
+                //clear the console
+                Console.Clear();
+
+                //prints the Frame
+                foreach (Frame frame in frames)
+                {
+                    //check if available space for the frame
+                    if (windowWidth - 1 - frame.PosX > frame.MinWidth && windowHeight - 1 - frame.PosY > frame.MinHeight)
+                    {
+                        //print the title line
+                        frame.TitleLine();
+
+                        //print the Column lines
+                        frame.ColumnPrint();
+
+                        //print the last line
+                        frame.BottomLine();
+                    }
+                }
             }
         }
 
-        /// <summary>
-        /// height of the frame. Cancels the relativeHeight if set.
-        /// </summary>
-        public int Height
+        private void BottomLine()
         {
-            get { return height; }
-            set
-            {
-                width = value;
-                usableHeight = Height - 4;
-                relativeHeight = null;
-            }
+            int width = (Width == 0) ? (Console.WindowWidth - PosX) : Width;
+
+            Console.SetCursorPosition(PosX, PosY + Height - 1);
+            Console.ForegroundColor = FRAME_COLOR;
+            Console.Write("└{0}┘", new string('─', width - 2));
+            Console.ResetColor();
         }
 
-        /// <summary>
-        /// the available width for content of the frame.
-        /// </summary>
-        public int UsableWidth
+        private void ColumnPrint()
         {
-            get { return usableWidth; }
-            private set { usableWidth = value; }
+            int endH = (Height == 0) ? Console.WindowHeight - 1 : (PosY + Height);
+            int endW = (Width == 0) ? Console.WindowWidth - 1 : (PosX + Width - 1);
+
+            Console.ForegroundColor = FRAME_COLOR;
+            Console.SetCursorPosition(PosX, PosY + 1);
+
+            for (int i = Console.CursorTop; i < endH - 1; i++)
+            {
+                Console.SetCursorPosition(PosX, i);
+                Console.Write('│');
+                Console.CursorLeft = endW;
+                Console.Write('│');
+            }
+
+            Console.ResetColor();
+
         }
 
-        /// <summary>
-        /// the available height for content of the frame.
-        /// </summary>
-        public int UsableHeight
+        private void TitleLine()
         {
-            get { return usableHeight; }
-            private set { usableHeight = value; }
-        }
 
-        public string Title
-        {
-            get { return title; }
-            set { title = value; }
-        }
+            int endW = (Width == 0) ? Console.WindowWidth : (PosX + Width);
 
-        /// <summary>
-        /// function that validates a 'star value' is correctly formated and returns the number of 'star as an int
-        /// </summary>
-        /// <param name="starValue">a star value using the 'x*' standard (an int x followed by a star char) that represents the shape should take x equal parts of the remaining space</param>
-        /// <returns>the number of equal parts the shape should take.</returns>
-        private int IsValidStarValue(string starValue)
-        {
-            //validate last char if the string is a star
-            if (starValue[starValue.Length - 1] != '*')
+            Console.SetCursorPosition(PosX, PosY);
+            
+            //pre-title characters
+            Console.ForegroundColor = FRAME_COLOR;
+            Console.Write("┌─");
+            
+            //print the title if not null
+            if(!string.IsNullOrEmpty(Title))
             {
-                return 0;
-            }
-            else if (starValue.Length == 1)
-            {
-                return 1;
+                Console.ForegroundColor = TITLE_COLOR;
+                Console.Write(" {0} ", Title);
             }
 
-            //remove the star and convert the remaining string to an int
-            try
+            //print until end of the Frame - 1
+            Console.ForegroundColor = FRAME_COLOR;
+            for (int i = Console.CursorLeft; i < endW - 1; i++)
             {
-                return int.Parse(starValue.Substring(0, starValue.Length - 1));
+                Console.Write('─');
             }
-            catch (Exception)
-            {
-                return 0;
-            }
+
+            //print last corner of Frame title line
+            Console.Write('┐');
+            Console.ResetColor();
         }
 
     }
