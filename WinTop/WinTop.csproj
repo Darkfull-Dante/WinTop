@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Chart.cs" />
     <Compile Include="CPU.cs" />
     <Compile Include="Create.cs" />
     <Compile Include="Frame.cs" />

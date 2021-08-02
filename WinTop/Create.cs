@@ -7,8 +7,16 @@ using System.Diagnostics;
 
 namespace WinTop
 {
+
     class Create
     {
+
+        public const int CPU_FRAME = 0;
+        public const int DSK_FRAME = 1;
+        public const int TMP_FRAME = 2;
+        public const int MEM_FRAME = 3;
+        public const int PRC_FRAME = 4;
+        public const int NTW_FRAME = 5;
 
         /// <summary>
         /// creates the frames to be used by main
@@ -28,7 +36,7 @@ namespace WinTop
             return frames;
         }
 
-        public static CPU[] CPUCores()
+        public static CPU[] CPUCores(List<Frame> frames)
         {
             int coreCount = Environment.ProcessorCount;
 
@@ -37,7 +45,7 @@ namespace WinTop
 
             for (int i = 0; i < coreCount; i++)
             {
-                cpuCores[i] = new CPU(new PerformanceCounter("Processor", "% Processor Time", i.ToString()));
+                cpuCores[i] = new CPU(new PerformanceCounter("Processor", "% Processor Time", i.ToString()), new Chart(frames[CPU_FRAME], CPU.CPUColor(i)), CPU_FRAME);
             }
 
             return cpuCores;

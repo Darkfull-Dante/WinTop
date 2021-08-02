@@ -14,15 +14,53 @@ namespace WinTop
         private const ConsoleColor FRAME_COLOR = ConsoleColor.Cyan;
         private const ConsoleColor TITLE_COLOR = ConsoleColor.White;
 
+        private const char FRAME_VERTICAL = '│';
+        private const char FRAME_HORIZONTAL = '─';
+        private const char FRAME_TOP_LEFT = '┌';
+        private const char FRAME_TOP_RIGHT = '┐';
+        private const char FRAME_BOTTOM_LEFT = '└';
+        private const char FRAME_BOTTOM_RIGHT = '┘';
+
         /// <summary>
         /// Gets or sets the Width of the frame. Zero to take the rest of the space
         /// </summary>
-        public int Width { get; set; }
+        private int width;
+        public int Width
+        {
+            get
+            {
+                if (width == 0)
+                {
+                    return Console.WindowWidth - PosX;
+                }
+                else
+                {
+                    return width;
+                }
+            }
+
+            set { width = value; }
+        }
 
         /// <summary>
         /// Gets or sets the height of the frame. Zero to take the rest of the sace
         /// </summary>
-        public int Height { get; set; }
+        private int height;
+        public int Height
+        {
+            get
+            {
+                if (height == 0)
+                {
+                    return Console.WindowHeight - PosY;
+                }
+                else
+                {
+                    return height;
+                }
+            }
+            set { height = value; }
+        }
 
         /// <summary>
         /// Gets or sets the Title of the frame. Null for no title
@@ -49,6 +87,8 @@ namespace WinTop
         /// </summary>
         public int MinHeight { get; set; }
 
+        public bool IsVisible { get; private set; }
+
         public Frame(int width, int height, string title, int posX, int posY, int minWidth, int minHeight)
         {
             Width = width;
@@ -58,6 +98,7 @@ namespace WinTop
             PosY = posY;
             MinWidth = minWidth;
             MinHeight = minHeight;
+            IsVisible = false;
         }
 
         public static void UpdateFrame(List<Frame> frames)
@@ -65,11 +106,11 @@ namespace WinTop
             int tempW = Console.WindowWidth;
             int tempH = Console.WindowHeight;
 
-            //check if console window changed size
-            if (windowWidth != Console.WindowWidth || windowHeight != Console.WindowHeight)
+
+            //wait
+            if (tempW != windowWidth || tempH != windowHeight)
             {
-                //wait
-                System.Threading.Thread.Sleep(1000);
+                System.Threading.Thread.Sleep(500);
 
                 //update the the new value
                 windowWidth = Console.WindowWidth;
@@ -81,36 +122,66 @@ namespace WinTop
                 //prints the Frame
                 foreach (Frame frame in frames)
                 {
-                    //check if available space for the frame
-                    if (windowWidth - 1 - frame.PosX > frame.MinWidth && windowHeight - 1 - frame.PosY > frame.MinHeight)
-                    {
-                        //print the title line
-                        frame.TitleLine();
-
-                        //print the Column lines
-                        frame.ColumnPrint();
-
-                        //print the last line
-                        frame.BottomLine();
-                    }
+                    frame.Draw();
+                }
+            }
+            else
+            {
+                foreach (Frame frame in frames)
+                {
+                        frame.Clear();
                 }
             }
         }
 
+        public void Draw()
+        {
+            //check if available space for the frame
+            if (windowWidth - 1 - PosX > MinWidth && windowHeight - 1 - PosY > MinHeight)
+            {
+
+                IsVisible = true;
+
+                //print the title line
+                TitleLine();
+
+                //print the Column lines
+                ColumnPrint();
+
+                //print the last line
+                BottomLine();
+            }
+            else
+            {
+                IsVisible = false;
+            }
+        }
+
+        public void Clear()
+        {
+            if (IsVisible)
+            {
+                for (int i = PosY + 1; i < PosY + Height - 1; i++)
+                {
+                    Console.SetCursorPosition(PosX + 1, i);
+                    Console.Write(new string(' ', Width - 2));
+                }
+            }
+            
+        }
+
         private void BottomLine()
         {
-            int width = (Width == 0) ? (Console.WindowWidth - PosX) : Width;
-
             Console.SetCursorPosition(PosX, PosY + Height - 1);
             Console.ForegroundColor = FRAME_COLOR;
-            Console.Write("└{0}┘", new string('─', width - 2));
+            Console.Write("{0}{1}{2}", FRAME_BOTTOM_LEFT, new string(FRAME_HORIZONTAL, Width - 2), FRAME_BOTTOM_RIGHT);
             Console.ResetColor();
         }
 
         private void ColumnPrint()
         {
-            int endH = (Height == 0) ? Console.WindowHeight - 1 : (PosY + Height);
-            int endW = (Width == 0) ? Console.WindowWidth - 1 : (PosX + Width - 1);
+            int endH = PosY + Height;
+            int endW = PosX + Width - 1;
 
             Console.ForegroundColor = FRAME_COLOR;
             Console.SetCursorPosition(PosX, PosY + 1);
@@ -118,9 +189,9 @@ namespace WinTop
             for (int i = Console.CursorTop; i < endH - 1; i++)
             {
                 Console.SetCursorPosition(PosX, i);
-                Console.Write('│');
+                Console.Write(FRAME_VERTICAL);
                 Console.CursorLeft = endW;
-                Console.Write('│');
+                Console.Write(FRAME_VERTICAL);
             }
 
             Console.ResetColor();
@@ -130,13 +201,13 @@ namespace WinTop
         private void TitleLine()
         {
 
-            int endW = (Width == 0) ? Console.WindowWidth : (PosX + Width);
+            int endW = PosX + Width;
 
             Console.SetCursorPosition(PosX, PosY);
             
             //pre-title characters
             Console.ForegroundColor = FRAME_COLOR;
-            Console.Write("┌─");
+            Console.Write("{0}{1}", FRAME_TOP_LEFT, FRAME_HORIZONTAL);
             
             //print the title if not null
             if(!string.IsNullOrEmpty(Title))
@@ -149,11 +220,11 @@ namespace WinTop
             Console.ForegroundColor = FRAME_COLOR;
             for (int i = Console.CursorLeft; i < endW - 1; i++)
             {
-                Console.Write('─');
+                Console.Write(FRAME_HORIZONTAL);
             }
 
             //print last corner of Frame title line
-            Console.Write('┐');
+            Console.Write(FRAME_TOP_RIGHT);
             Console.ResetColor();
         }
 

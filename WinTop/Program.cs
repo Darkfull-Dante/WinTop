@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Threading;
 
 namespace WinTop
 {
@@ -16,24 +15,25 @@ namespace WinTop
 
             //initiate elements
             List<Frame> appFrames = Create.Frames();
-            CPU[] cpuCores = Create.CPUCores();
+            CPU[] cpuCores = Create.CPUCores(appFrames);
 
-            for (int i = 0; i < 10; i++)
+            Console.CursorVisible = false;
+
+            while (true)
             {
-                Console.WriteLine("{0:f}%", cpuCores[0].UpdateValue());
-                Thread.Sleep(1000);
+                Frame.UpdateFrame(appFrames);
+
+
+                for (int i = (cpuCores.Length - 1); i >= 0; i--)
+                {
+                    cpuCores[i].UpdateValue();
+                    cpuCores[i].LineChart.UpdatePosition(appFrames[cpuCores[i].FrameIndex]);
+                    cpuCores[i].LineChart.PrintChart();
+                }
+                
+
+                Thread.Sleep(500);
             }
-
-            Console.WriteLine();
-
-            for (int i = 0; i < 10; i++)
-            {
-                Console.WriteLine("{0:f}%", cpuCores[0].History[i]);
-            }
-
-            Console.ReadKey();
         }
-
-        
     }
-}
+} 

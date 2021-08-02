@@ -18,38 +18,40 @@ namespace WinTop
                                                        ConsoleColor.Magenta };
 
         public PerformanceCounter Counter { get; set; }
-        public float[] History { get; set; }
+        public Queue<float> History { get; set; }
         public ConsoleColor Color { get; set; }
+        public Chart LineChart { get; set; }
+        public int FrameIndex { get; set; }
 
-        public CPU(PerformanceCounter counter)
+        public CPU(PerformanceCounter counter, Chart lineChart, int frameIndex)
         {
             Counter = counter;
-            History = new float[MAX_HISTORY];
-            Color = COLOR_VALUES[int.Parse(counter.InstanceName) % 5];
+            History = new Queue<float>();
+            Color = CPUColor(int.Parse(counter.InstanceName));
+            LineChart = lineChart;
+            FrameIndex = frameIndex;
         }
 
         public float UpdateValue()
         {
-            float currentValue;
-            ShiftArray(1, currentValue = Counter.NextValue());
+            float currentValue = Counter.NextValue();
+            History.Enqueue(currentValue);
 
-            return currentValue;
-
-        }
-
-        private void ShiftArray(int shift, float newValue)
-        {
-            float[] arr = new float[MAX_HISTORY];
-
-            for (int i = 0; i < History.Length; i++)
+            //dequeue if too much values
+            if (History.Count > MAX_HISTORY)
             {
-                arr[(i + shift) % arr.Length] = History[i];
+                History.Dequeue();
             }
 
-            arr[0] = newValue;
+            //Update chart dataset
+            LineChart.UpdateDataSet(History.ToList());
 
-            History = arr;
+            return currentValue;
+        }
 
+        public static ConsoleColor CPUColor(int counterNumber)
+        {
+            return COLOR_VALUES[counterNumber % COLOR_VALUES.Length];
         }
     }
 }
