@@ -17,6 +17,8 @@ namespace WinTop
             List<Frame> appFrames = Create.Frames();
             CPU[] cpuCores = Create.CPUCores(appFrames);
 
+            int cpuGraphCount = cpuCores.Length >= 4 ? 4 : cpuCores.Length;
+
             Console.CursorVisible = false;
 
             while (true)
@@ -24,7 +26,7 @@ namespace WinTop
                 Frame.UpdateFrame(appFrames);
 
 
-                for (int i = (cpuCores.Length - 1); i >= 0; i--)
+                for (int i = (cpuGraphCount - 1); i >= 0; i--)
                 {
                     cpuCores[i].UpdateValue();
                     cpuCores[i].LineChart.UpdatePosition(appFrames[cpuCores[i].FrameIndex]);
