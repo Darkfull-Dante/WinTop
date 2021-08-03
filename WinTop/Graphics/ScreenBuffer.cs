@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace WinTop
+namespace WinTop.Graphics
 {
     class ScreenBuffer
     {
@@ -144,8 +144,8 @@ namespace WinTop
 
         public void Print()
         {
-            try
-            {
+            //try
+            //{
                 for (int i = 0; i < Console.WindowHeight; i++)
                 {
                     for (int j = 0; j < Console.WindowWidth; j++)
@@ -158,12 +158,12 @@ namespace WinTop
                 }
 
                 Console.ResetColor();
-            }
-            catch (IndexOutOfRangeException)
-            {
+            //}
+            //catch (IndexOutOfRangeException)
+            //{
 
-                throw;
-            }
+                //throw;
+            //}
             
         }
     }

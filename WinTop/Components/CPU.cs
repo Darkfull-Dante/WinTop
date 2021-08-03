@@ -4,8 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using WinTop.Graphics;
 
-namespace WinTop
+namespace WinTop.Components
 {
     class CPU
     {
