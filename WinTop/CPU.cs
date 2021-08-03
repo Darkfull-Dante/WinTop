@@ -100,11 +100,10 @@ namespace WinTop
                 if (h + stringLength <= frame.PosX + frame.Width - 1)
                 {
                     //set cursor position and console color
-                    Console.SetCursorPosition(h, v);
-                    Console.ForegroundColor = cpuCores[i].Color;
+                    Program.screenBuffer.SetCursorPosition(h, v);
 
                     //print the value
-                    Console.Write(" {0}", cpuValue);
+                    Program.screenBuffer.Write(string.Format(" {0}", cpuValue), cpuCores[i].Color);
 
                 }
                 else
@@ -114,8 +113,6 @@ namespace WinTop
 
 
             }
-
-            Console.ResetColor();
 
             int[] result = { stringLength + lastMaxColumnLength + 1, numberOfRows };
 

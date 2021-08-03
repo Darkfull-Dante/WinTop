@@ -115,8 +115,6 @@ namespace WinTop
         private void PrintLineChart()
         {
 
-            Console.ForegroundColor = ChartColor;
-
             int hStart = StartX + Width - DataSet.Count;
 
             for (int i = DataSet.Count - 1; i >= 0; i--)
@@ -136,7 +134,7 @@ namespace WinTop
                         olderValue = (i != 0) ? VerticalValue(DataSet[i - 1], max, Height) : presentValue;
 
                         //set cursor posotion
-                        Console.SetCursorPosition(hStart + i, StartY + Height - presentValue - 1);
+                        Program.screenBuffer.SetCursorPosition(hStart + i, StartY + Height - presentValue - 1);
                         break;
                     }
                     catch (ArgumentOutOfRangeException)
@@ -150,14 +148,18 @@ namespace WinTop
                 } while (true);
 
                 //print the char
-                if (!(Console.CursorLeft <= ProtectedData[0] && Console.CursorTop <= ProtectedData[1])) { Console.Write(GetLineChar(presentValue, olderValue)); }
-                else { string test = "here"; }
+                if (IsInProtectedZone(ProtectedData)) { Program.screenBuffer.Write(GetLineChar(presentValue, olderValue), ChartColor); }
                 
                 //print the ascending or descending line
                 PrintVeticalLines(presentValue, olderValue, hStart + i);
             }
 
             Console.ResetColor();
+        }
+
+        private bool IsInProtectedZone(int[] protectedData)
+        {
+            return !(Program.screenBuffer.CursorLeft <= ProtectedData[0] && Program.screenBuffer.CursorTop <= ProtectedData[1]);
         }
 
         private void PrintVeticalLines(int presentValue, int olderValue, int hPos)
@@ -168,7 +170,7 @@ namespace WinTop
             char endChar = LINE_VERTICAL;
             
             //set the horizontal position
-            Console.CursorLeft = hPos;
+            Program.screenBuffer.CursorLeft = hPos;
 
             //determine direction, if both value equal, exit
             if (presentValue == olderValue)
@@ -180,16 +182,13 @@ namespace WinTop
                 for (int i = start + 1; i < end; i++)
                 {
                     
-                    Console.CursorTop = i;
-                    if (!(Console.CursorLeft <= ProtectedData[0] && Console.CursorTop <= ProtectedData[1]))
+                    Program.screenBuffer.CursorTop = i;
+                    if (IsInProtectedZone(ProtectedData))
                     {
-                        Console.Write(LINE_VERTICAL);
-                        Console.CursorLeft--;
+                        Program.screenBuffer.Write(LINE_VERTICAL, ChartColor);
+                        Program.screenBuffer.CursorLeft--;
                     }
-                    else
-                    {
-                        string test = "here";
-                    }
+             
                     
                 }
 
@@ -199,15 +198,11 @@ namespace WinTop
             {
                 for (int i = start - 1; i > end; i--)
                 {
-                    Console.CursorTop = i;
-                    if (!(Console.CursorLeft <= ProtectedData[0] && Console.CursorTop <= ProtectedData[1]))
+                    Program.screenBuffer.CursorTop = i;
+                    if (IsInProtectedZone(ProtectedData))
                     {
-                        Console.Write(LINE_VERTICAL);
-                        Console.CursorLeft--;
-                    }
-                    else
-                    {
-                        string test = "here";
+                        Program.screenBuffer.Write(LINE_VERTICAL, ChartColor);
+                        Program.screenBuffer.CursorLeft--;
                     }
                     
                 }
@@ -216,15 +211,11 @@ namespace WinTop
             }
 
             //write the last char
-            Console.CursorTop = end;
-            if (!(Console.CursorLeft <= ProtectedData[0] && Console.CursorTop <= ProtectedData[1]))
+            Program.screenBuffer.CursorTop = end;
+            if (IsInProtectedZone(ProtectedData))
             {
-                Console.Write(endChar);
-                Console.CursorLeft--;
-            }
-            else
-            {
-                string test = "here";
+                Program.screenBuffer.Write(endChar, ChartColor);
+                Program.screenBuffer.CursorLeft--;
             }
             
         }

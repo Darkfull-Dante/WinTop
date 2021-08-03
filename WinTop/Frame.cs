@@ -9,8 +9,6 @@ namespace WinTop
     class Frame
     {
 
-        private static int windowWidth;
-        private static int windowHeight;
         private const ConsoleColor FRAME_COLOR = ConsoleColor.Cyan;
         private const ConsoleColor TITLE_COLOR = ConsoleColor.White;
 
@@ -31,7 +29,7 @@ namespace WinTop
             {
                 if (width == 0)
                 {
-                    return Console.WindowWidth - PosX;
+                    return Program.screenBuffer.Width - PosX;
                 }
                 else
                 {
@@ -52,7 +50,7 @@ namespace WinTop
             {
                 if (height == 0)
                 {
-                    return Console.WindowHeight - PosY;
+                    return Program.screenBuffer.Height - PosY;
                 }
                 else
                 {
@@ -107,23 +105,18 @@ namespace WinTop
         public static void UpdateFrame(List<Frame> frames)
         {
             bool valid;
+
+            Console.CursorVisible = false;
             
             do
             {
                 try
                 {
-                    int tempW = Console.WindowWidth;
-                    int tempH = Console.WindowHeight;
-
-                    if (tempW != windowWidth || tempH != windowHeight)
+                    if (Program.screenBuffer.Width != Console.WindowWidth || Program.screenBuffer.Height != Console.WindowHeight)
                     {
-                        
-                        //update the the new value
-                        windowWidth = Console.WindowWidth;
-                        windowHeight = Console.WindowHeight;
+                        //update screenBuffer Width and Height
+                        Program.screenBuffer.UpdateBufferSize();
 
-                        //clear the console
-                        //Console.Clear();
                     }
 
                     foreach (Frame frame in frames)
@@ -134,7 +127,7 @@ namespace WinTop
 
                     valid = true;
                 }
-                catch (ArgumentOutOfRangeException)
+                catch (IndexOutOfRangeException)
                 {
                     valid = false;
                 }
@@ -150,7 +143,7 @@ namespace WinTop
             try
             {
                 //check if available space for the frame
-                if (windowWidth - 1 - PosX > MinWidth && (windowHeight) - 1 - PosY > MinHeight)
+                if (Program.screenBuffer.Width - 1 - PosX > MinWidth && Program.screenBuffer.Height - 1 - PosY > MinHeight)
                 {
 
                     IsVisible = true;
@@ -171,12 +164,10 @@ namespace WinTop
                     IsVisible = false;
                 }
             }
-            catch (ArgumentOutOfRangeException)
+            catch (IndexOutOfRangeException)
             {
                 throw;
             }
-
-            Console.SetWindowPosition(0, 0);
             
         }
 
@@ -197,8 +188,8 @@ namespace WinTop
                         stringWidth -= ProtectedData[0];
                     }
 
-                    Console.SetCursorPosition(hStart, i);
-                    Console.Write(new string(' ', stringWidth));
+                    Program.screenBuffer.SetCursorPosition(hStart, i);
+                    Program.screenBuffer.Write(new string(' ', stringWidth));
                 }
             }
             
@@ -208,16 +199,14 @@ namespace WinTop
         {
             try
             {
-                Console.SetCursorPosition(PosX, PosY + Height - 1);
+                Program.screenBuffer.SetCursorPosition(PosX, PosY + Height - 1);
             }
-            catch (ArgumentOutOfRangeException)
+            catch (IndexOutOfRangeException)
             {
                 throw;
             }
-            
-            Console.ForegroundColor = FRAME_COLOR;
-            Console.Write("{0}{1}{2}", FRAME_BOTTOM_LEFT, new string(FRAME_HORIZONTAL, Width - 2), FRAME_BOTTOM_RIGHT);
-            Console.ResetColor();
+
+            Program.screenBuffer.Write(string.Format("{0}{1}{2}", FRAME_BOTTOM_LEFT, new string(FRAME_HORIZONTAL, Width - 2), FRAME_BOTTOM_RIGHT), FRAME_COLOR);
         }
 
         private void ColumnPrint()
@@ -227,18 +216,15 @@ namespace WinTop
 
             try
             {
-                Console.ForegroundColor = FRAME_COLOR;
-                Console.SetCursorPosition(PosX, PosY + 1);
+                Program.screenBuffer.SetCursorPosition(PosX, PosY + 1);
 
-                for (int i = Console.CursorTop; i < endH - 1; i++)
+                for (int i = Program.screenBuffer.CursorTop; i < endH - 1; i++)
                 {
-                    Console.SetCursorPosition(PosX, i);
-                    Console.Write(FRAME_VERTICAL);
-                    Console.CursorLeft = endW;
-                    Console.Write(FRAME_VERTICAL);
+                    Program.screenBuffer.SetCursorPosition(PosX, i);
+                    Program.screenBuffer.Write(FRAME_VERTICAL, FRAME_COLOR);
+                    Program.screenBuffer.CursorLeft = endW;
+                    Program.screenBuffer.Write(FRAME_VERTICAL, FRAME_COLOR);
                 }
-
-                Console.ResetColor();
             }
             catch (Exception)
             {
@@ -256,31 +242,27 @@ namespace WinTop
             {
                 int endW = PosX + Width;
 
-                Console.SetCursorPosition(PosX, PosY);
+                Program.screenBuffer.SetCursorPosition(PosX, PosY);
 
                 //pre-title characters
-                Console.ForegroundColor = FRAME_COLOR;
-                Console.Write("{0}{1}", FRAME_TOP_LEFT, FRAME_HORIZONTAL);
+                Program.screenBuffer.Write(string.Format("{0}{1}", FRAME_TOP_LEFT, FRAME_HORIZONTAL), FRAME_COLOR);
 
                 //print the title if not null
                 if (!string.IsNullOrEmpty(Title))
                 {
-                    Console.ForegroundColor = TITLE_COLOR;
-                    Console.Write(" {0} ", Title);
+                    Program.screenBuffer.Write(string.Format(" {0} ", Title), TITLE_COLOR);
                 }
 
                 //print until end of the Frame - 1
-                Console.ForegroundColor = FRAME_COLOR;
-                for (int i = Console.CursorLeft; i < endW - 1; i++)
+                for (int i = Program.screenBuffer.CursorLeft; i < endW - 1; i++)
                 {
-                    Console.Write(FRAME_HORIZONTAL);
+                    Program.screenBuffer.Write(FRAME_HORIZONTAL, FRAME_COLOR);
                 }
 
                 //print last corner of Frame title line
-                Console.Write(FRAME_TOP_RIGHT);
-                Console.ResetColor();
+                Program.screenBuffer.Write(FRAME_TOP_RIGHT, FRAME_COLOR);
             }
-            catch (ArgumentOutOfRangeException)
+            catch (IndexOutOfRangeException)
             {
                 throw;
             }
