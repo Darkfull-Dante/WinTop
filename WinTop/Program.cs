@@ -6,6 +6,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
+using WinTop.Components;
+using WinTop.Graphics;
 
 namespace WinTop
 {
@@ -14,7 +16,9 @@ namespace WinTop
 
         public static ScreenBuffer screenBuffer = new ScreenBuffer(Console.WindowWidth, Console.WindowHeight - 1);
         public static List<Frame> appFrames = Create.Frames();
-        public static List<CPU> cpuCores = Create.CPUCores(appFrames);
+        public static List<CPU> cpuCores = Create.CPUCores();
+        public static List<Disk> disks = Create.Disks();
+        private static bool keepRunning = true;
         
 
         static void Main()
@@ -22,11 +26,16 @@ namespace WinTop
 
             Console.OutputEncoding = Encoding.UTF8;
             int cpuGraphCount = cpuCores.Count >= 4 ? 4 : cpuCores.Count;
-            
+
+            Console.CancelKeyPress += delegate (object sender, ConsoleCancelEventArgs e)
+            {
+                e.Cancel = true;
+                keepRunning = false;
+            };
 
             Frame.UpdateFrame(appFrames);
 
-            while (true)
+            while (keepRunning)
             {
 
                 //update the frames
@@ -42,7 +51,10 @@ namespace WinTop
 
                 //update the cpuValue table
                 appFrames[Create.CPU_FRAME].ProtectedData = CPU.PrintCoreData(cpuCores, appFrames[Create.CPU_FRAME], 4);
-                
+
+                //print the disks details
+                Disk.Print(disks, appFrames[Create.DSK_FRAME]);
+
                 //wait before update
                 Thread.Sleep(100);
                 
@@ -60,6 +72,11 @@ namespace WinTop
                     screenBuffer.Clear();
                 }
             }
+
+            //clear the screen and formating at the end of the program
+            Console.ResetColor();
+            Console.Clear();
+
         }
     }
 } 

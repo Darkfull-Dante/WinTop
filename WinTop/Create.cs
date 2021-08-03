@@ -4,6 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using WinTop.Components;
+using WinTop.Graphics;
+using System.IO;
 
 namespace WinTop
 {
@@ -36,7 +39,7 @@ namespace WinTop
             return frames;
         }
 
-        public static List<CPU> CPUCores(List<Frame> frames)
+        public static List<CPU> CPUCores()
         {
             int coreCount = Environment.ProcessorCount;
 
@@ -45,10 +48,23 @@ namespace WinTop
 
             for (int i = 0; i < coreCount; i++)
             {
-                cpuCores.Add(new CPU(new PerformanceCounter("Processor", "% Processor Time", i.ToString()), new Chart(frames[CPU_FRAME], CPU.CPUColor(i), CPU_FRAME), CPU_FRAME));
+                cpuCores.Add(new CPU(new PerformanceCounter("Processor", "% Processor Time", i.ToString()), new Chart(Program.appFrames[CPU_FRAME], CPU.CPUColor(i), CPU_FRAME), CPU_FRAME));
             }
 
             return cpuCores;
+        }
+
+        public static List<Disk> Disks()
+        {
+            DriveInfo[] driveInfos = DriveInfo.GetDrives();
+            List<Disk> disks = new List<Disk>();
+
+            foreach (DriveInfo drive in driveInfos)
+            {
+                disks.Add(new Disk(drive));
+            }
+
+            return disks;
         }
     }
 }

@@ -44,13 +44,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Chart.cs" />
-    <Compile Include="CPU.cs" />
+    <Compile Include="Graphics\Chart.cs" />
+    <Compile Include="Components\CPU.cs" />
     <Compile Include="Create.cs" />
-    <Compile Include="Frame.cs" />
+    <Compile Include="Components\Disk.cs" />
+    <Compile Include="Graphics\Frame.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ScreenBuffer.cs" />
+    <Compile Include="Graphics\ScreenBuffer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
