@@ -16,10 +16,10 @@ namespace WinTop
 
         private const char FRAME_VERTICAL = '│';
         private const char FRAME_HORIZONTAL = '─';
-        private const char FRAME_TOP_LEFT = '┌';
-        private const char FRAME_TOP_RIGHT = '┐';
-        private const char FRAME_BOTTOM_LEFT = '└';
-        private const char FRAME_BOTTOM_RIGHT = '┘';
+        private const char FRAME_TOP_LEFT = '╭';
+        private const char FRAME_TOP_RIGHT = '╮';
+        private const char FRAME_BOTTOM_LEFT = '╰';
+        private const char FRAME_BOTTOM_RIGHT = '╯';
 
         /// <summary>
         /// Gets or sets the Width of the frame. Zero to take the rest of the space
@@ -89,6 +89,8 @@ namespace WinTop
 
         public bool IsVisible { get; private set; }
 
+        public int[] ProtectedData { get; set; }
+
         public Frame(int width, int height, string title, int posX, int posY, int minWidth, int minHeight)
         {
             Width = width;
@@ -99,72 +101,104 @@ namespace WinTop
             MinWidth = minWidth;
             MinHeight = minHeight;
             IsVisible = false;
+            ProtectedData = new int[] { 0, 0 };
         }
 
         public static void UpdateFrame(List<Frame> frames)
         {
-            int tempW = Console.WindowWidth;
-            int tempH = Console.WindowHeight;
-
-
-            //wait
-            if (tempW != windowWidth || tempH != windowHeight)
+            bool valid;
+            
+            do
             {
-                System.Threading.Thread.Sleep(500);
-
-                //update the the new value
-                windowWidth = Console.WindowWidth;
-                windowHeight = Console.WindowHeight;
-
-                //clear the console
-                Console.Clear();
-
-                //prints the Frame
-                foreach (Frame frame in frames)
+                try
                 {
-                    frame.Draw();
-                }
-            }
-            else
-            {
-                foreach (Frame frame in frames)
-                {
+                    int tempW = Console.WindowWidth;
+                    int tempH = Console.WindowHeight;
+
+                    if (tempW != windowWidth || tempH != windowHeight)
+                    {
+                        
+                        //update the the new value
+                        windowWidth = Console.WindowWidth;
+                        windowHeight = Console.WindowHeight;
+
+                        //clear the console
+                        //Console.Clear();
+                    }
+
+                    foreach (Frame frame in frames)
+                    {
+                        frame.Draw();
                         frame.Clear();
+                    }
+
+                    valid = true;
                 }
-            }
+                catch (ArgumentOutOfRangeException)
+                {
+                    valid = false;
+                }
+                
+            } while (!valid);
+            
+            
         }
 
         public void Draw()
         {
-            //check if available space for the frame
-            if (windowWidth - 1 - PosX > MinWidth && windowHeight - 1 - PosY > MinHeight)
+
+            try
             {
+                //check if available space for the frame
+                if (windowWidth - 1 - PosX > MinWidth && (windowHeight) - 1 - PosY > MinHeight)
+                {
 
-                IsVisible = true;
+                    IsVisible = true;
 
-                //print the title line
-                TitleLine();
 
-                //print the Column lines
-                ColumnPrint();
+                    //print the title line
+                    TitleLine();
 
-                //print the last line
-                BottomLine();
+                    //print the Column lines
+                    ColumnPrint();
+
+                    //print the last line
+                    BottomLine();
+
+                }
+                else
+                {
+                    IsVisible = false;
+                }
             }
-            else
+            catch (ArgumentOutOfRangeException)
             {
-                IsVisible = false;
+                throw;
             }
+
+            Console.SetWindowPosition(0, 0);
+            
         }
 
         public void Clear()
         {
             if (IsVisible)
             {
+
                 for (int i = PosY + 1; i < PosY + Height - 1; i++)
                 {
-                    Console.SetCursorPosition(PosX + 1, i);
-                    Console.Write(new string(' ', Width - 2));
+
+                    int hStart = PosX + 1;
+                    int stringWidth = Width - 2;
+                    
+                    if (i <= ProtectedData[1])
+                    {
+                        hStart += ProtectedData[0];
+                        stringWidth -= ProtectedData[0];
+                    }
+
+                    Console.SetCursorPosition(hStart, i);
+                    Console.Write(new string(' ', stringWidth));
                 }
             }
             
@@ -172,7 +206,15 @@ namespace WinTop
 
         private void BottomLine()
         {
-            Console.SetCursorPosition(PosX, PosY + Height - 1);
+            try
+            {
+                Console.SetCursorPosition(PosX, PosY + Height - 1);
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                throw;
+            }
+            
             Console.ForegroundColor = FRAME_COLOR;
             Console.Write("{0}{1}{2}", FRAME_BOTTOM_LEFT, new string(FRAME_HORIZONTAL, Width - 2), FRAME_BOTTOM_RIGHT);
             Console.ResetColor();
@@ -183,49 +225,66 @@ namespace WinTop
             int endH = PosY + Height;
             int endW = PosX + Width - 1;
 
-            Console.ForegroundColor = FRAME_COLOR;
-            Console.SetCursorPosition(PosX, PosY + 1);
-
-            for (int i = Console.CursorTop; i < endH - 1; i++)
+            try
             {
-                Console.SetCursorPosition(PosX, i);
-                Console.Write(FRAME_VERTICAL);
-                Console.CursorLeft = endW;
-                Console.Write(FRAME_VERTICAL);
-            }
+                Console.ForegroundColor = FRAME_COLOR;
+                Console.SetCursorPosition(PosX, PosY + 1);
 
-            Console.ResetColor();
+                for (int i = Console.CursorTop; i < endH - 1; i++)
+                {
+                    Console.SetCursorPosition(PosX, i);
+                    Console.Write(FRAME_VERTICAL);
+                    Console.CursorLeft = endW;
+                    Console.Write(FRAME_VERTICAL);
+                }
+
+                Console.ResetColor();
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+            
 
         }
 
         private void TitleLine()
         {
 
-            int endW = PosX + Width;
-
-            Console.SetCursorPosition(PosX, PosY);
-            
-            //pre-title characters
-            Console.ForegroundColor = FRAME_COLOR;
-            Console.Write("{0}{1}", FRAME_TOP_LEFT, FRAME_HORIZONTAL);
-            
-            //print the title if not null
-            if(!string.IsNullOrEmpty(Title))
+            try
             {
-                Console.ForegroundColor = TITLE_COLOR;
-                Console.Write(" {0} ", Title);
-            }
+                int endW = PosX + Width;
 
-            //print until end of the Frame - 1
-            Console.ForegroundColor = FRAME_COLOR;
-            for (int i = Console.CursorLeft; i < endW - 1; i++)
+                Console.SetCursorPosition(PosX, PosY);
+
+                //pre-title characters
+                Console.ForegroundColor = FRAME_COLOR;
+                Console.Write("{0}{1}", FRAME_TOP_LEFT, FRAME_HORIZONTAL);
+
+                //print the title if not null
+                if (!string.IsNullOrEmpty(Title))
+                {
+                    Console.ForegroundColor = TITLE_COLOR;
+                    Console.Write(" {0} ", Title);
+                }
+
+                //print until end of the Frame - 1
+                Console.ForegroundColor = FRAME_COLOR;
+                for (int i = Console.CursorLeft; i < endW - 1; i++)
+                {
+                    Console.Write(FRAME_HORIZONTAL);
+                }
+
+                //print last corner of Frame title line
+                Console.Write(FRAME_TOP_RIGHT);
+                Console.ResetColor();
+            }
+            catch (ArgumentOutOfRangeException)
             {
-                Console.Write(FRAME_HORIZONTAL);
+                throw;
             }
-
-            //print last corner of Frame title line
-            Console.Write(FRAME_TOP_RIGHT);
-            Console.ResetColor();
+            
         }
 
     }

@@ -36,16 +36,16 @@ namespace WinTop
             return frames;
         }
 
-        public static CPU[] CPUCores(List<Frame> frames)
+        public static List<CPU> CPUCores(List<Frame> frames)
         {
             int coreCount = Environment.ProcessorCount;
 
 
-            CPU[] cpuCores = new CPU[coreCount];
+            List<CPU> cpuCores = new List<CPU>();
 
             for (int i = 0; i < coreCount; i++)
             {
-                cpuCores[i] = new CPU(new PerformanceCounter("Processor", "% Processor Time", i.ToString()), new Chart(frames[CPU_FRAME], CPU.CPUColor(i)), CPU_FRAME);
+                cpuCores.Add(new CPU(new PerformanceCounter("Processor", "% Processor Time", i.ToString()), new Chart(frames[CPU_FRAME], CPU.CPUColor(i), CPU_FRAME), CPU_FRAME));
             }
 
             return cpuCores;

@@ -13,12 +13,12 @@ namespace WinTop
         public const int AREA_CHART = 1;
 
         //chars for the line chart type
-        private const char LINE_UP = '╚';
-        private const char LINE_DOWN = '╔';
-        private const char LINE_HORIZONTAL = '═';
-        private const char LINE_VERTICAL = '║';
-        private const char LINE_FROM_UP = '╝';
-        private const char LINE_FROM_DOWN = '╗';
+        private const char LINE_UP = '┗';
+        private const char LINE_DOWN = '┏';
+        private const char LINE_HORIZONTAL = '━';
+        private const char LINE_VERTICAL = '┃';
+        private const char LINE_FROM_UP = '┛';
+        private const char LINE_FROM_DOWN = '┓';
 
         public int Type { get; set; }
         public List<float> DataSet { get; set; }
@@ -28,6 +28,8 @@ namespace WinTop
         public int Width { get; set; }
         public int Height { get; set; }
         public ConsoleColor ChartColor { get; set; }
+        public int FrameIndex { get; set; }
+        public int[] ProtectedData { get; set; }
 
         /// <summary>
         /// Base constructor with all properties modifiable
@@ -40,7 +42,7 @@ namespace WinTop
         /// <param name="width">width of the chart</param>
         /// <param name="height">height of the chart</param>
         /// <param name="chartColor">Color of the chart</param>
-        public Chart(int type, List<float> datatSet, float maxValue, int startX, int startY, int width, int height, ConsoleColor chartColor)
+        public Chart(int type, List<float> datatSet, float maxValue, int startX, int startY, int width, int height, ConsoleColor chartColor, int frameIndex)
         {
             Type = type;
             DataSet = datatSet;
@@ -50,6 +52,8 @@ namespace WinTop
             Width = width;
             Height = height;
             ChartColor = chartColor;
+            FrameIndex = frameIndex;
+            ProtectedData = new int[] { 0, 0 };
         }
 
         /// <summary>
@@ -60,7 +64,7 @@ namespace WinTop
         /// <param name="maxValue">the maximum value that can exist in the dataset (can be dynamically modified for moving max</param>
         /// <param name="frame">Frame object in which the chart resides</param>
         /// <param name="chartColor">Color of the chart</param>
-        public Chart(int type, List<float> datatSet, float maxValue, Frame frame, ConsoleColor chartColor) : this(type, datatSet, maxValue,frame.PosX + 1, frame.PosY + 1, frame.Width - 2, frame.Height - 2, chartColor) { }
+        public Chart(int type, List<float> datatSet, float maxValue, Frame frame, ConsoleColor chartColor, int frameIndex) : this(type, datatSet, maxValue,frame.PosX + 1, frame.PosY + 1, frame.Width - 2, frame.Height - 2, chartColor, frameIndex) { }
 
         /// <summary>
         /// Chart constructor that takes a Frame object and derives start position and size from it. Assumes the max value is 100.
@@ -68,25 +72,26 @@ namespace WinTop
         /// <param name="type">Type of chart to print (Line or Area)</param>
         /// <param name="frame">Frame object in which the chart resides</param>
         /// <param name="chartColor">Color of the chart</param>
-        public Chart(int type, Frame frame, ConsoleColor chartColor) : this(type, new List<float>(), 100,frame.PosX + 1, frame.PosY + 1, frame.Width - 2, frame.Height - 2, chartColor) { }
+        public Chart(int type, Frame frame, ConsoleColor chartColor, int frameIndex) : this(type, new List<float>(), 100,frame.PosX + 1, frame.PosY + 1, frame.Width - 2, frame.Height - 2, chartColor, frameIndex) { }
 
         /// <summary>
         /// Line chart constructor that takes a Frame object and derives start position and size from it. Assumes the max value is 100.
         /// </summary>
         /// <param name="frame">Frame object in which the chart resides</param>
         /// <param name="chartColor">Color of the chart</param>
-        public Chart(Frame frame, ConsoleColor chartColor) : this(LINE_CHART, new List<float>(), 100,frame.PosX + 1, frame.PosY + 1, frame.Width - 2, frame.Height - 2, chartColor) { }
+        public Chart(Frame frame, ConsoleColor chartColor, int frameIndex) : this(LINE_CHART, new List<float>(), 100,frame.PosX + 1, frame.PosY + 1, frame.Width - 2, frame.Height - 2, chartColor, frameIndex) { }
 
         /// <summary>
         /// Method that updates the starts and size property of chart based on a frame object
         /// </summary>
-        /// <param name="frame"></param>
+        /// <param name="frame">the frame in which the chart resides</param>
         public void UpdatePosition(Frame frame)
         {
             StartX = frame.PosX + 1;
             StartY = frame.PosY + 1;
             Width = frame.Width - 2;
             Height = frame.Height - 2;
+            ProtectedData = frame.ProtectedData;
         }
 
         public void PrintChart()
@@ -117,18 +122,37 @@ namespace WinTop
             for (int i = DataSet.Count - 1; i >= 0; i--)
             {
 
-                float max = MaxValue != 0 ? MaxValue : DataSet.Max();
+                float max;
+                int presentValue;
+                int olderValue;
 
-                int presentValue = VerticalValue(DataSet[i], max, Height);
-                int olderValue = (i != 0) ? VerticalValue(DataSet[i - 1], max, Height) : presentValue;
+                do
+                {
+                    try
+                    {
+                        max = MaxValue != 0 ? MaxValue : DataSet.Max();
 
-                //set cursor posotion
-                Console.SetCursorPosition(hStart + i, StartY + Height - presentValue - 1);
+                        presentValue = VerticalValue(DataSet[i], max, Height);
+                        olderValue = (i != 0) ? VerticalValue(DataSet[i - 1], max, Height) : presentValue;
+
+                        //set cursor posotion
+                        Console.SetCursorPosition(hStart + i, StartY + Height - presentValue - 1);
+                        break;
+                    }
+                    catch (ArgumentOutOfRangeException)
+                    {
+                        Frame.UpdateFrame(Program.appFrames);
+                        UpdatePosition(Program.appFrames[FrameIndex]);
+                        UpdateDataSet(DataSet);
+                        i = DataSet.Count - 1;
+                        hStart = StartX + Width - DataSet.Count;
+                    }
+                } while (true);
 
                 //print the char
-                Console.Write(GetLineChar(presentValue, olderValue));
-
-
+                if (!(Console.CursorLeft <= ProtectedData[0] && Console.CursorTop <= ProtectedData[1])) { Console.Write(GetLineChar(presentValue, olderValue)); }
+                else { string test = "here"; }
+                
                 //print the ascending or descending line
                 PrintVeticalLines(presentValue, olderValue, hStart + i);
             }
@@ -155,9 +179,18 @@ namespace WinTop
             {
                 for (int i = start + 1; i < end; i++)
                 {
+                    
                     Console.CursorTop = i;
-                    Console.Write(LINE_VERTICAL);
-                    Console.CursorLeft--;
+                    if (!(Console.CursorLeft <= ProtectedData[0] && Console.CursorTop <= ProtectedData[1]))
+                    {
+                        Console.Write(LINE_VERTICAL);
+                        Console.CursorLeft--;
+                    }
+                    else
+                    {
+                        string test = "here";
+                    }
+                    
                 }
 
                 endChar = LINE_FROM_UP;
@@ -167,8 +200,16 @@ namespace WinTop
                 for (int i = start - 1; i > end; i--)
                 {
                     Console.CursorTop = i;
-                    Console.Write(LINE_VERTICAL);
-                    Console.CursorLeft--;
+                    if (!(Console.CursorLeft <= ProtectedData[0] && Console.CursorTop <= ProtectedData[1]))
+                    {
+                        Console.Write(LINE_VERTICAL);
+                        Console.CursorLeft--;
+                    }
+                    else
+                    {
+                        string test = "here";
+                    }
+                    
                 }
 
                 endChar = LINE_FROM_DOWN;
@@ -176,8 +217,16 @@ namespace WinTop
 
             //write the last char
             Console.CursorTop = end;
-            Console.Write(endChar);
-            Console.CursorLeft--;
+            if (!(Console.CursorLeft <= ProtectedData[0] && Console.CursorTop <= ProtectedData[1]))
+            {
+                Console.Write(endChar);
+                Console.CursorLeft--;
+            }
+            else
+            {
+                string test = "here";
+            }
+            
         }
 
         private char GetLineChar(float presentValue, float olderValue)
