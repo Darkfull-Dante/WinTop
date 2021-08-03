@@ -91,7 +91,7 @@ namespace WinTop
             StartY = frame.PosY + 1;
             Width = frame.Width - 2;
             Height = frame.Height - 2;
-            ProtectedData = frame.ProtectedData;
+            ProtectedData = new int[] { frame.ProtectedData[0] + 1, frame.ProtectedData[1] + 1 };
         }
 
         public void PrintChart()

@@ -50,12 +50,14 @@ namespace WinTop
                 try
                 {
                     screenBuffer.Print();
-                    screenBuffer.Clear();
-
                 }
                 catch (IndexOutOfRangeException)
                 {
                     Frame.UpdateFrame(appFrames);
+                }
+                finally
+                {
+                    screenBuffer.Clear();
                 }
             }
         }
