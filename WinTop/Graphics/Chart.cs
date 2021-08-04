@@ -122,31 +122,19 @@ namespace WinTop.Graphics
                 float max;
                 int value;
 
-                //do
-                //{
-                    try
-                    {
-                        max = MaxValue != 0 ? MaxValue : DataSet.Max();
-                        value = VerticalValue(DataSet[i], max, Height);
+                try
+                {
+                    max = MaxValue != 0 ? MaxValue : DataSet.Max();
+                    value = VerticalValue(DataSet[i], max, Height);
 
-                        //set the cursor posotion
-                        Program.screenBuffer.SetCursorPosition(hStart + i, StartY + Height - 1);
-                        PrintAreaLine(DataSet[i], value);
-                        //break;
-                    }
-                    catch (IndexOutOfRangeException)
-                    {
-                        throw;
-                    
-                        /*Frame.UpdateFrame(Program.appFrames);
-                        UpdatePosition(Program.appFrames[FrameIndex]);
-                        UpdateDataSet(DataSet);
-                        i = DataSet.Count - 1;
-                        hStart = StartX + Width - DataSet.Count;*/
-                    }
-                //} while (true);
-
-                
+                    //set the cursor posotion
+                    Program.screenBuffer.SetCursorPosition(hStart + i, StartY + Height - 1);
+                    PrintAreaLine(DataSet[i], value);
+                }
+                catch (IndexOutOfRangeException)
+                {
+                    throw;
+                }
             }
         }
 
@@ -158,18 +146,16 @@ namespace WinTop.Graphics
             for (i = Program.screenBuffer.CursorTop; i > vEnd; i--)
             {
                 Program.screenBuffer.CursorTop = i;
-                Program.screenBuffer.Write(AREA_FULLBLOCK, ChartColor);
+                if(IsNotInProtectedZone()) { Program.screenBuffer.Write(AREA_FULLBLOCK, ChartColor); }
                 Program.screenBuffer.CursorLeft--;
             }
 
             if ((int)realValue / 10 >= 5)
             {
                 Program.screenBuffer.CursorTop = i;
-                Program.screenBuffer.Write(AREA_HALFBLOCK, ChartColor);
+                if (IsNotInProtectedZone()) { Program.screenBuffer.Write(AREA_HALFBLOCK, ChartColor); }
                 Program.screenBuffer.CursorLeft--;
-            }
-            
-            
+            } 
         }
 
         private void PrintLineChart()
@@ -184,36 +170,26 @@ namespace WinTop.Graphics
                 int presentValue;
                 int olderValue;
 
-                //do
-                //{
-                    try
-                    {
-                        max = MaxValue != 0 ? MaxValue : DataSet.Max();
+                try
+                {
+                    max = MaxValue != 0 ? MaxValue : DataSet.Max();
 
-                        presentValue = VerticalValue(DataSet[i], max, Height);
-                        olderValue = (i != 0) ? VerticalValue(DataSet[i - 1], max, Height) : presentValue;
+                    presentValue = VerticalValue(DataSet[i], max, Height);
+                    olderValue = (i != 0) ? VerticalValue(DataSet[i - 1], max, Height) : presentValue;
 
-                        //set cursor posotion
-                        Program.screenBuffer.SetCursorPosition(hStart + i, StartY + Height - presentValue - 1);
-                        //break;
-                    }
-                    catch (IndexOutOfRangeException)
-                    {
-
-                        throw;
-                    
-                        /*Frame.UpdateFrame(Program.appFrames);
-                        UpdatePosition(Program.appFrames[FrameIndex]);
-                        UpdateDataSet(DataSet);
-                        i = DataSet.Count - 1;
-                        hStart = StartX + Width - DataSet.Count;*/
-                    }
-                //} while (true);
+                    //set cursor posotion
+                    Program.screenBuffer.SetCursorPosition(hStart + i, StartY + Height - presentValue - 1);
+                    //break;
+                }
+                catch (IndexOutOfRangeException)
+                {
+                    throw;
+                }
 
                 //print the char
                 try
                 {
-                    if (IsNotInProtectedZone(ProtectedData)) { Program.screenBuffer.Write(GetLineChar(presentValue, olderValue), ChartColor); }
+                    if (IsNotInProtectedZone()) { Program.screenBuffer.Write(GetLineChar(presentValue, olderValue), ChartColor); }
                 }
                 catch (IndexOutOfRangeException)
                 {
@@ -228,7 +204,7 @@ namespace WinTop.Graphics
             Console.ResetColor();
         }
 
-        private bool IsNotInProtectedZone(int[] protectedData)
+        private bool IsNotInProtectedZone()
         {
             return !(Program.screenBuffer.CursorLeft <= ProtectedData[0] && Program.screenBuffer.CursorTop <= ProtectedData[1]);
         }
@@ -254,7 +230,7 @@ namespace WinTop.Graphics
                 {
                     
                     Program.screenBuffer.CursorTop = i;
-                    if (IsNotInProtectedZone(ProtectedData))
+                    if (IsNotInProtectedZone())
                     {
                         Program.screenBuffer.Write(LINE_VERTICAL, ChartColor);
                         Program.screenBuffer.CursorLeft--;
@@ -270,7 +246,7 @@ namespace WinTop.Graphics
                 for (int i = start - 1; i > end; i--)
                 {
                     Program.screenBuffer.CursorTop = i;
-                    if (IsNotInProtectedZone(ProtectedData))
+                    if (IsNotInProtectedZone())
                     {
                         Program.screenBuffer.Write(LINE_VERTICAL, ChartColor);
                         Program.screenBuffer.CursorLeft--;
@@ -283,7 +259,7 @@ namespace WinTop.Graphics
 
             //write the last char
             Program.screenBuffer.CursorTop = end;
-            if (IsNotInProtectedZone(ProtectedData))
+            if (IsNotInProtectedZone())
             {
                 Program.screenBuffer.Write(endChar, ChartColor);
                 Program.screenBuffer.CursorLeft--;

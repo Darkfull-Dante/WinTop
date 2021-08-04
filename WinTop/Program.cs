@@ -167,6 +167,7 @@ namespace WinTop
                 memory.AreaChart.UpdatePosition(appFrames[memory.FrameIndex]);
                 memory.AreaChart.PrintChart();
                 appFrames[Create.MEM_FRAME].ProtectedData = memory.Print();
+
             }
 
             return visibleFrameCount;
