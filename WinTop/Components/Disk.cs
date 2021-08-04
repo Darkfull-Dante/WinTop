@@ -39,7 +39,7 @@ namespace WinTop.Components
 
         public override string ToString()
         {
-            return Letter + new string(' ', 5) + ((float)Drive.TotalFreeSpace/Drive.TotalSize*100).ToString("f").PadLeft(6) + "% " + GetReadableSize(Drive.TotalFreeSpace).PadLeft(10);
+            return Letter + new string(' ', 5) + (((float)Drive.TotalSize - Drive.TotalFreeSpace)/Drive.TotalSize*100).ToString("f").PadLeft(6) + "% " + GetReadableSize(Drive.TotalFreeSpace).PadLeft(10);
         }
 
         public static void Print(List<Disk> disks, Frame frame)

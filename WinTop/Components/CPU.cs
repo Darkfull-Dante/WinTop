@@ -12,11 +12,11 @@ namespace WinTop.Components
     {
 
         private const int MAX_HISTORY = 1000;
-        private static ConsoleColor[] COLOR_VALUES = { ConsoleColor.Blue, 
-                                                       ConsoleColor.DarkYellow, 
-                                                       ConsoleColor.Green,
-                                                       ConsoleColor.Red, 
-                                                       ConsoleColor.Magenta };
+        private readonly static ConsoleColor[] COLOR_VALUES = { ConsoleColor.Blue, 
+                                                                ConsoleColor.DarkYellow, 
+                                                                ConsoleColor.Green,
+                                                                ConsoleColor.Red, 
+                                                                ConsoleColor.Magenta };
 
         public PerformanceCounter Counter { get; set; }
         public int ID { get; set; }
@@ -35,13 +35,13 @@ namespace WinTop.Components
             FrameIndex = frameIndex;
         }
 
-        public float UpdateValue()
+        public float Update()
         {
             float currentValue = Counter.NextValue();
             History.Enqueue(currentValue);
 
             //dequeue if too much values
-            if (History.Count > MAX_HISTORY)
+            while (History.Count > MAX_HISTORY)
             {
                 History.Dequeue();
             }
@@ -61,7 +61,7 @@ namespace WinTop.Components
         {
             List<float> tempList = History.ToList();
 
-            return string.Format("CPU{0}:{1}%", ID, tempList[tempList.Count - 1].ToString("f").PadLeft(7));
+            return string.Format("CPU{0}:{1}%", ID, tempList[tempList.Count - 1].ToString("f").PadLeft(6));
         }
 
         /// <summary>
@@ -98,14 +98,20 @@ namespace WinTop.Components
                 int h = frame.PosX + 1 + lastMaxColumnLength + 2 * (i / numberOfRows);
 
                 //check if position is possible and data can fit
-                if (h + stringLength <= frame.PosX + frame.Width - 1)
+                if (h + stringLength <= frame.PosX + frame.Width - 2)
                 {
                     //set cursor position and console color
                     Program.screenBuffer.SetCursorPosition(h, v);
 
                     //print the value
-                    Program.screenBuffer.Write(string.Format(" {0}", cpuValue), cpuCores[i].Color);
-
+                    try
+                    {
+                        Program.screenBuffer.Write(string.Format(" {0}", cpuValue), cpuCores[i].Color);
+                    }
+                    catch (IndexOutOfRangeException)
+                    {
+                        throw;
+                    }
                 }
                 else
                 {

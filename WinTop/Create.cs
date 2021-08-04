@@ -7,6 +7,7 @@ using System.Diagnostics;
 using WinTop.Components;
 using WinTop.Graphics;
 using System.IO;
+using Microsoft.VisualBasic.Devices;
 
 namespace WinTop
 {
@@ -32,11 +33,16 @@ namespace WinTop
             frames.Add(new Frame(0, 12, "CPU Usage", 0, 0, 20, 12));
             frames.Add(new Frame(30, 7, "Disk Usage", 0, 12, 30, 7));
             frames.Add(new Frame(30, 7, "Temperatures", 0, 19, 30, 7));
-            frames.Add(new Frame(0, 14, "Memory Usage", 30, 12, 18, 14));
+            frames.Add(new Frame(0, 14, "Memory Usage", 30, 12, 21, 14));
             frames.Add(new Frame(50, 13, "Processes", 0, 26, 50, 13));
             frames.Add(new Frame(0, 13, "Network Usage", 50, 26, 19, 13));
 
             return frames;
+        }
+
+        public static Memory MemoryCounter()
+        {
+            return new Memory(new ComputerInfo(), new Chart(Chart.AREA_CHART,Program.appFrames[MEM_FRAME], Memory.CHART_COLOR, MEM_FRAME), MEM_FRAME);
         }
 
         public static List<CPU> CPUCores()
@@ -61,7 +67,7 @@ namespace WinTop
 
             foreach (DriveInfo drive in driveInfos)
             {
-                disks.Add(new Disk(drive));
+                if (drive.IsReady) { disks.Add(new Disk(drive)); }
             }
 
             return disks;

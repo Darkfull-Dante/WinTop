@@ -107,7 +107,7 @@ namespace WinTop.Graphics
             bool valid;
 
             Console.CursorVisible = false;
-            
+
             do
             {
                 try
@@ -116,7 +116,6 @@ namespace WinTop.Graphics
                     {
                         //update screenBuffer Width and Height
                         Program.screenBuffer.UpdateBufferSize();
-
                     }
 
                     foreach (Frame frame in frames)
@@ -127,14 +126,21 @@ namespace WinTop.Graphics
 
                     valid = true;
                 }
-                catch (IndexOutOfRangeException)
+                catch (Exception ex)
                 {
-                    valid = false;
+                    if (ex is ArgumentOutOfRangeException || ex is IndexOutOfRangeException)
+                    {
+                        Program.screenBuffer.UpdateBufferSize();
+                        valid = false;
+
+                    }
+                    else
+                    {
+                        throw;
+                    }
                 }
-                
-            } while (!valid);
-            
-            
+            }
+            while (!valid);
         }
 
         public void Draw()
@@ -188,8 +194,21 @@ namespace WinTop.Graphics
                         stringWidth -= ProtectedData[0];
                     }
 
-                    Program.screenBuffer.SetCursorPosition(hStart, i);
-                    Program.screenBuffer.Write(new string(' ', stringWidth));
+                    try
+                    {
+                        Program.screenBuffer.SetCursorPosition(hStart, i);
+                        Program.screenBuffer.Write(new string(' ', stringWidth));
+                    }
+                    catch (ArgumentOutOfRangeException)
+                    {
+
+                        throw;
+                    }
+                    catch (IndexOutOfRangeException)
+                    {
+                        throw;
+                    }
+                    
                 }
             }
             
@@ -226,7 +245,7 @@ namespace WinTop.Graphics
                     Program.screenBuffer.Write(FRAME_VERTICAL, FRAME_COLOR);
                 }
             }
-            catch (Exception)
+            catch (IndexOutOfRangeException)
             {
 
                 throw;

@@ -8,6 +8,9 @@ namespace WinTop.Graphics
 {
     class ScreenBuffer
     {
+
+        public const int TAB_SIZE = 8;
+        
         public char[,] CharArray { get; set; }
         public ConsoleColor[,] ColorArray { get; set; }
         public int Width { get; private set; }
@@ -54,7 +57,23 @@ namespace WinTop.Graphics
                 case '\n':
                     SetCursorPosition(0, CursorTop++);
                     break;
+                case '\t':
+                    
+                    //get the shift needed to get to the next tab
+                    int shift = CursorLeft % TAB_SIZE;
 
+                    //if already on a tab, shift to the next
+                    if (shift == 0)
+                    {
+                        shift = TAB_SIZE;
+                    }
+
+                    //set the cursor if not out of bound
+                    if (CursorLeft + shift < Width)
+                    {
+                        CursorLeft += shift;
+                    }
+                    break;
                 default:
                     try
                     {
@@ -144,8 +163,11 @@ namespace WinTop.Graphics
 
         public void Print()
         {
-            //try
-            //{
+            try
+            {
+                Console.SetCursorPosition(0, Height);
+                Console.Write(new string(' ', Width - 1));
+
                 for (int i = 0; i < Console.WindowHeight; i++)
                 {
                     for (int j = 0; j < Console.WindowWidth; j++)
@@ -157,13 +179,15 @@ namespace WinTop.Graphics
                     }
                 }
 
-                Console.ResetColor();
-            //}
-            //catch (IndexOutOfRangeException)
-            //{
+                
 
-                //throw;
-            //}
+                Console.ResetColor();
+            }
+            catch (IndexOutOfRangeException)
+            {
+
+                throw;
+            }
             
         }
     }
