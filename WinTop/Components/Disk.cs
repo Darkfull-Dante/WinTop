@@ -12,17 +12,36 @@ namespace WinTop.Components
     class Disk
     {
 
+        /// <summary>
+        /// array containing all relevent memory size for the disk
+        /// </summary>
         private readonly static string[] MEMORY_SIZE = { "B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB" };
 
+        /// <summary>
+        /// The object containing the drive information
+        /// </summary>
         private DriveInfo Drive { get; set; }
-        public string Letter { get; set; }
 
+        /// <summary>
+        /// the root letter of the drive
+        /// </summary>
+        public string Letter { get; private set; }
+
+        /// <summary>
+        /// object constructor of the the Disk class
+        /// </summary>
+        /// <param name="drive"></param>
         public Disk(DriveInfo drive)
         {
             Drive = drive;
             Letter = Drive.RootDirectory.Name;
         }
 
+        /// <summary>
+        /// static methods that returns a readable memory size from a number of bytes
+        /// </summary>
+        /// <param name="space">memory size in bytes</param>
+        /// <returns>readable version of a memory size with its memory size label added (ie. 100 MB)</returns>
         public static string GetReadableSize(float space)
         {
             const int DIVIDER = 1024;
@@ -37,11 +56,20 @@ namespace WinTop.Components
             return space.ToString("f") + " " + MEMORY_SIZE[i].PadRight(2);
         }
 
+        /// <summary>
+        /// returns a string of the relevant information of the drive
+        /// </summary>
+        /// <returns>string containing the drive letter, percentage of used space and remaining space in readable format</returns>
         public override string ToString()
         {
             return Letter + new string(' ', 5) + (((float)Drive.TotalSize - Drive.TotalFreeSpace)/Drive.TotalSize*100).ToString("f").PadLeft(6) + "% " + GetReadableSize(Drive.TotalFreeSpace).PadLeft(10);
         }
 
+        /// <summary>
+        /// static method to print all the drives information in a table
+        /// </summary>
+        /// <param name="disks">list of disks to print information of</param>
+        /// <param name="frame">the frame in which to print the disk information</param>
         public static void Print(List<Disk> disks, Frame frame)
         {
             //check max number of drive

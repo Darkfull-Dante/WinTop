@@ -9,30 +9,106 @@ namespace WinTop.Graphics
     class Chart
     {
 
+        /// <summary>
+        /// value representing a line chart type
+        /// </summary>
         public const int LINE_CHART = 0;
+
+        public enum LineType { LineChart, AreaChart};
+
+        /// <summary>
+        /// value representing an area chart type
+        /// </summary>
         public const int AREA_CHART = 1;
 
-        //chars for the line chart type
+        /// <summary>
+        /// character to be used for a line chart going up
+        /// </summary>
         private const char LINE_UP = '┗';
+
+        /// <summary>
+        /// character to be used for a line chart going down
+        /// </summary>
         private const char LINE_DOWN = '┏';
+
+        /// <summary>
+        /// character to be used for a line chart keepinbg its current value
+        /// </summary>
         private const char LINE_HORIZONTAL = '━';
+
+        /// <summary>
+        /// character to be used for a line chart for vertical scaling
+        /// </summary>
         private const char LINE_VERTICAL = '┃';
+
+        /// <summary>
+        /// character to be used for a line chart for a vertical end coming from up
+        /// </summary>
         private const char LINE_FROM_UP = '┛';
+
+        /// <summary>
+        /// character to be used for a line chart for a vertical end coming from down
+        /// </summary>
         private const char LINE_FROM_DOWN = '┓';
 
-        //chars for the area chart type
+        /// <summary>
+        /// character to be used for a full block in an area chart
+        /// </summary>
         private const char AREA_FULLBLOCK = '█';
+
+        /// <summary>
+        /// character to be used for an half block in an area chart
+        /// </summary>
         private const char AREA_HALFBLOCK = '▄';
 
-        public int Type { get; set; }
+        /// <summary>
+        /// integer representing the chart type
+        /// </summary>
+        public LineType Type { get; set; }
+
+        /// <summary>
+        /// Collection of the data set the chart uses to prints itself
+        /// </summary>
         public List<float> DataSet { get; set; }
+
+        /// <summary>
+        /// the maximal value the chart can take. If zero, the maximum will be determined by the biggest value in the dataset at the moment of printing
+        /// </summary>
         public float MaxValue { get; set; }
+
+        /// <summary>
+        /// the starting index on the x axis
+        /// </summary>
         public int StartX { get; set; }
+
+        /// <summary>
+        /// the starting index on the y axis
+        /// </summary>
         public int StartY { get; set; }
+
+        /// <summary>
+        /// the width of the chart
+        /// </summary>
         public int Width { get; set; }
+
+        /// <summary>
+        /// the height of the chart
+        /// </summary>
         public int Height { get; set; }
+
+        /// <summary>
+        /// the color of the chart
+        /// </summary>
         public ConsoleColor ChartColor { get; set; }
+
+        /// <summary>
+        /// the index (inside a collection) of the frame in which the chart is printed
+        /// </summary>
         public int FrameIndex { get; set; }
+
+        /// <summary>
+        /// the area in the frame that shouldn't receive chart characters
+        /// </summary>
         public int[] ProtectedData { get; set; }
 
         /// <summary>
@@ -46,7 +122,7 @@ namespace WinTop.Graphics
         /// <param name="width">width of the chart</param>
         /// <param name="height">height of the chart</param>
         /// <param name="chartColor">Color of the chart</param>
-        public Chart(int type, List<float> datatSet, float maxValue, int startX, int startY, int width, int height, ConsoleColor chartColor, int frameIndex)
+        public Chart(LineType type, List<float> datatSet, float maxValue, int startX, int startY, int width, int height, ConsoleColor chartColor, int frameIndex)
         {
             Type = type;
             DataSet = datatSet;
@@ -68,7 +144,7 @@ namespace WinTop.Graphics
         /// <param name="maxValue">the maximum value that can exist in the dataset (can be dynamically modified for moving max</param>
         /// <param name="frame">Frame object in which the chart resides</param>
         /// <param name="chartColor">Color of the chart</param>
-        public Chart(int type, List<float> datatSet, float maxValue, Frame frame, ConsoleColor chartColor, int frameIndex) : this(type, datatSet, maxValue,frame.PosX + 1, frame.PosY + 1, frame.Width - 2, frame.Height - 2, chartColor, frameIndex) { }
+        public Chart(LineType type, List<float> datatSet, float maxValue, Frame frame, ConsoleColor chartColor, int frameIndex) : this(type, datatSet, maxValue,frame.PosX + 1, frame.PosY + 1, frame.Width - 2, frame.Height - 2, chartColor, frameIndex) { }
 
         /// <summary>
         /// Chart constructor that takes a Frame object and derives start position and size from it. Assumes the max value is 100.
@@ -76,14 +152,14 @@ namespace WinTop.Graphics
         /// <param name="type">Type of chart to print (Line or Area)</param>
         /// <param name="frame">Frame object in which the chart resides</param>
         /// <param name="chartColor">Color of the chart</param>
-        public Chart(int type, Frame frame, ConsoleColor chartColor, int frameIndex) : this(type, new List<float>(), 100,frame.PosX + 1, frame.PosY + 1, frame.Width - 2, frame.Height - 2, chartColor, frameIndex) { }
+        public Chart(LineType type, Frame frame, ConsoleColor chartColor, int frameIndex) : this(type, new List<float>(), 100,frame.PosX + 1, frame.PosY + 1, frame.Width - 2, frame.Height - 2, chartColor, frameIndex) { }
 
         /// <summary>
         /// Line chart constructor that takes a Frame object and derives start position and size from it. Assumes the max value is 100.
         /// </summary>
         /// <param name="frame">Frame object in which the chart resides</param>
         /// <param name="chartColor">Color of the chart</param>
-        public Chart(Frame frame, ConsoleColor chartColor, int frameIndex) : this(LINE_CHART, new List<float>(), 100,frame.PosX + 1, frame.PosY + 1, frame.Width - 2, frame.Height - 2, chartColor, frameIndex) { }
+        public Chart(Frame frame, ConsoleColor chartColor, int frameIndex) : this(LineType.LineChart, new List<float>(), 100,frame.PosX + 1, frame.PosY + 1, frame.Width - 2, frame.Height - 2, chartColor, frameIndex) { }
 
         /// <summary>
         /// Method that updates the starts and size property of chart based on a frame object
@@ -98,21 +174,26 @@ namespace WinTop.Graphics
             ProtectedData = new int[] { frame.ProtectedData[0] + 1, frame.ProtectedData[1] + 1 };
         }
 
+        /// <summary>
+        /// prints the charts in the screen buffer
+        /// </summary>
         public void PrintChart()
         {
             
-            
             switch (Type)
             {
-                case LINE_CHART:
+                case LineType.LineChart:
                     PrintLineChart();
                     break;
-                case AREA_CHART:
+                case LineType.AreaChart:
                     PrintAreaChart();
                     break;
             }
         }
 
+        /// <summary>
+        /// method to print the area chart
+        /// </summary>
         private void PrintAreaChart()
         {
             int hStart = StartX + Width - DataSet.Count;
@@ -150,6 +231,11 @@ namespace WinTop.Graphics
             }
         }
 
+        /// <summary>
+        /// prints a full column of an area chart
+        /// </summary>
+        /// <param name="realValue">the real value of th class object</param>
+        /// <param name="indexValue">the height value of the current column in terms of the maximum height of the chart</param>
         private void PrintAreaLine(float realValue, int indexValue)
         {
             int vEnd = Program.screenBuffer.CursorTop - indexValue;
@@ -172,6 +258,9 @@ namespace WinTop.Graphics
             
         }
 
+        /// <summary>
+        /// method to print a line chart
+        /// </summary>
         private void PrintLineChart()
         {
 
@@ -228,6 +317,11 @@ namespace WinTop.Graphics
             Console.ResetColor();
         }
 
+        /// <summary>
+        /// checks if 
+        /// </summary>
+        /// <param name="protectedData"></param>
+        /// <returns></returns>
         private bool IsNotInProtectedZone(int[] protectedData)
         {
             return !(Program.screenBuffer.CursorLeft <= ProtectedData[0] && Program.screenBuffer.CursorTop <= ProtectedData[1]);

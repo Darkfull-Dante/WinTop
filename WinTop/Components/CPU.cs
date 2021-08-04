@@ -11,20 +11,56 @@ namespace WinTop.Components
     class CPU
     {
 
+        /// <summary>
+        /// Maximum history for the object data queue
+        /// </summary>
         private const int MAX_HISTORY = 1000;
+
+        /// <summary>
+        /// Array of the different console color used for the cpu line chart
+        /// </summary>
         private readonly static ConsoleColor[] COLOR_VALUES = { ConsoleColor.Blue, 
                                                                 ConsoleColor.DarkYellow, 
                                                                 ConsoleColor.Green,
                                                                 ConsoleColor.Red, 
                                                                 ConsoleColor.Magenta };
 
-        public PerformanceCounter Counter { get; set; }
-        public int ID { get; set; }
+        /// <summary>
+        /// the performance counter element that is used to calculate the current CPU core usage
+        /// </summary>
+        public PerformanceCounter Counter { get; private set; }
+        
+        /// <summary>
+        /// the numeric ID of the CPU core
+        /// </summary>
+        public int ID { get; private set; }
+
+        /// <summary>
+        /// the queue holding the cpu core usage values in order
+        /// </summary>
         public Queue<float> History { get; set; }
-        public ConsoleColor Color { get; set; }
+
+        /// <summary>
+        /// the console color value to draw the line chart and write the cpu core information
+        /// </summary>
+        public ConsoleColor Color { get; private set; }
+
+        /// <summary>
+        /// the line chart element that the cpu can use to draw its usage values
+        /// </summary>
         public Chart LineChart { get; set; }
+
+        /// <summary>
+        /// the index (inside a collection) of the frame in which the cpu information are drawn
+        /// </summary>
         public int FrameIndex { get; set; }
 
+        /// <summary>
+        /// object constructor of the the CPU class
+        /// </summary>
+        /// <param name="counter">the performance counter element that is used to calculate the current CPU core usage</param>
+        /// <param name="lineChart">the line chart element that the cpu can use to draw its usage values</param>
+        /// <param name="frameIndex">the index (inside a collection) of the frame in which the cpu information are drawn</param>
         public CPU(PerformanceCounter counter, Chart lineChart, int frameIndex)
         {
             Counter = counter;
@@ -35,6 +71,10 @@ namespace WinTop.Components
             FrameIndex = frameIndex;
         }
 
+        /// <summary>
+        /// fetches the most current value of the cpu core counter and queues it in the history queue. An item is dequeued if the maximum number of item is reached
+        /// </summary>
+        /// <returns>the most current value of the cpu core usage</returns>
         public float Update()
         {
             float currentValue = Counter.NextValue();
@@ -52,11 +92,20 @@ namespace WinTop.Components
             return currentValue;
         }
 
+        /// <summary>
+        /// static class that determines the color of the cpu based on a loop around the array
+        /// </summary>
+        /// <param name="counterNumber">the cpu core number (zero-based)</param>
+        /// <returns>the console color value of the cpu</returns>
         public static ConsoleColor CPUColor(int counterNumber)
         {
             return COLOR_VALUES[counterNumber % COLOR_VALUES.Length];
         }
 
+        /// <summary>
+        /// returns a string representing the cpu core ID followed by the most recent value in the history queue
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             List<float> tempList = History.ToList();

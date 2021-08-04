@@ -42,7 +42,7 @@ namespace WinTop
 
         public static Memory MemoryCounter()
         {
-            return new Memory(new ComputerInfo(), new Chart(Chart.AREA_CHART,Program.appFrames[MEM_FRAME], Memory.CHART_COLOR, MEM_FRAME), MEM_FRAME);
+            return new Memory(new ComputerInfo(), new Chart(Chart.LineType.AreaChart, Program.appFrames[MEM_FRAME], Memory.CHART_COLOR, MEM_FRAME), MEM_FRAME);
         }
 
         public static List<CPU> CPUCores()
