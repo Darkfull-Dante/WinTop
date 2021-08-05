@@ -8,12 +8,10 @@ namespace WinTop.Graphics
 {
     class Chart
     {
-
+        
         /// <summary>
-        /// value representing a line chart type
+        /// enumeration of the types of charts possible in the class
         /// </summary>
-        public const int LINE_CHART = 0;
-
         public enum LineType { LineChart, AreaChart};
 
         /// <summary>
@@ -112,7 +110,7 @@ namespace WinTop.Graphics
         public int[] ProtectedData { get; set; }
 
         /// <summary>
-        /// Base constructor with all properties modifiable
+        /// object constructor of the Chart class
         /// </summary>
         /// <param name="type">Type of chart to print (Line or Area)</param>
         /// <param name="datatSet">set of data to print</param>
@@ -122,6 +120,7 @@ namespace WinTop.Graphics
         /// <param name="width">width of the chart</param>
         /// <param name="height">height of the chart</param>
         /// <param name="chartColor">Color of the chart</param>
+        /// <param name="frameIndex">index of the frame the chart is printed in</param>
         public Chart(LineType type, List<float> datatSet, float maxValue, int startX, int startY, int width, int height, ConsoleColor chartColor, int frameIndex)
         {
             Type = type;
@@ -137,28 +136,31 @@ namespace WinTop.Graphics
         }
 
         /// <summary>
-        /// Chart constructor that takes a data set and a Frame object and derives start position and size from it
+        /// object constructor of the Chart class
         /// </summary>
         /// <param name="type">Type of chart to print (Line or Area)</param>
         /// <param name="datatSet">set of data to print</param>
         /// <param name="maxValue">the maximum value that can exist in the dataset (can be dynamically modified for moving max</param>
         /// <param name="frame">Frame object in which the chart resides</param>
         /// <param name="chartColor">Color of the chart</param>
+        /// <param name="frameIndex">index of the frame the chart is printed in</param>
         public Chart(LineType type, List<float> datatSet, float maxValue, Frame frame, ConsoleColor chartColor, int frameIndex) : this(type, datatSet, maxValue,frame.PosX + 1, frame.PosY + 1, frame.Width - 2, frame.Height - 2, chartColor, frameIndex) { }
 
         /// <summary>
-        /// Chart constructor that takes a Frame object and derives start position and size from it. Assumes the max value is 100.
+        /// object constructor of the Chart class
         /// </summary>
         /// <param name="type">Type of chart to print (Line or Area)</param>
         /// <param name="frame">Frame object in which the chart resides</param>
         /// <param name="chartColor">Color of the chart</param>
+        /// <param name="frameIndex">index of the frame the chart is printed in</param>
         public Chart(LineType type, Frame frame, ConsoleColor chartColor, int frameIndex) : this(type, new List<float>(), 100,frame.PosX + 1, frame.PosY + 1, frame.Width - 2, frame.Height - 2, chartColor, frameIndex) { }
 
         /// <summary>
-        /// Line chart constructor that takes a Frame object and derives start position and size from it. Assumes the max value is 100.
+        /// object constructor of the Chart class
         /// </summary>
         /// <param name="frame">Frame object in which the chart resides</param>
         /// <param name="chartColor">Color of the chart</param>
+        /// <param name="frameIndex">index of the frame the chart is printed in</param>
         public Chart(Frame frame, ConsoleColor chartColor, int frameIndex) : this(LineType.LineChart, new List<float>(), 100,frame.PosX + 1, frame.PosY + 1, frame.Width - 2, frame.Height - 2, chartColor, frameIndex) { }
 
         /// <summary>
@@ -203,31 +205,19 @@ namespace WinTop.Graphics
                 float max;
                 int value;
 
-                //do
-                //{
-                    try
-                    {
-                        max = MaxValue != 0 ? MaxValue : DataSet.Max();
-                        value = VerticalValue(DataSet[i], max, Height);
+                try
+                {
+                    max = MaxValue != 0 ? MaxValue : DataSet.Max();
+                    value = VerticalValue(DataSet[i], max, Height);
 
-                        //set the cursor posotion
-                        Program.screenBuffer.SetCursorPosition(hStart + i, StartY + Height - 1);
-                        PrintAreaLine(DataSet[i], value);
-                        //break;
-                    }
-                    catch (IndexOutOfRangeException)
-                    {
-                        throw;
-                    
-                        /*Frame.UpdateFrame(Program.appFrames);
-                        UpdatePosition(Program.appFrames[FrameIndex]);
-                        UpdateDataSet(DataSet);
-                        i = DataSet.Count - 1;
-                        hStart = StartX + Width - DataSet.Count;*/
-                    }
-                //} while (true);
-
-                
+                    //set the cursor posotion
+                    Program.screenBuffer.SetCursorPosition(hStart + i, StartY + Height - 1);
+                    PrintAreaLine(DataSet[i], value);
+                }
+                catch (IndexOutOfRangeException)
+                {
+                    throw;
+                }
             }
         }
 
@@ -244,18 +234,16 @@ namespace WinTop.Graphics
             for (i = Program.screenBuffer.CursorTop; i > vEnd; i--)
             {
                 Program.screenBuffer.CursorTop = i;
-                Program.screenBuffer.Write(AREA_FULLBLOCK, ChartColor);
+                if(!IsInProtectedZone()) { Program.screenBuffer.Write(AREA_FULLBLOCK, ChartColor); }
                 Program.screenBuffer.CursorLeft--;
             }
 
             if ((int)realValue / 10 >= 5)
             {
                 Program.screenBuffer.CursorTop = i;
-                Program.screenBuffer.Write(AREA_HALFBLOCK, ChartColor);
+                if (!IsInProtectedZone()) { Program.screenBuffer.Write(AREA_HALFBLOCK, ChartColor); }
                 Program.screenBuffer.CursorLeft--;
-            }
-            
-            
+            } 
         }
 
         /// <summary>
@@ -273,36 +261,26 @@ namespace WinTop.Graphics
                 int presentValue;
                 int olderValue;
 
-                //do
-                //{
-                    try
-                    {
-                        max = MaxValue != 0 ? MaxValue : DataSet.Max();
+                try
+                {
+                    max = MaxValue != 0 ? MaxValue : DataSet.Max();
 
-                        presentValue = VerticalValue(DataSet[i], max, Height);
-                        olderValue = (i != 0) ? VerticalValue(DataSet[i - 1], max, Height) : presentValue;
+                    presentValue = VerticalValue(DataSet[i], max, Height);
+                    olderValue = (i != 0) ? VerticalValue(DataSet[i - 1], max, Height) : presentValue;
 
-                        //set cursor posotion
-                        Program.screenBuffer.SetCursorPosition(hStart + i, StartY + Height - presentValue - 1);
-                        //break;
-                    }
-                    catch (IndexOutOfRangeException)
-                    {
-
-                        throw;
-                    
-                        /*Frame.UpdateFrame(Program.appFrames);
-                        UpdatePosition(Program.appFrames[FrameIndex]);
-                        UpdateDataSet(DataSet);
-                        i = DataSet.Count - 1;
-                        hStart = StartX + Width - DataSet.Count;*/
-                    }
-                //} while (true);
+                    //set cursor posotion
+                    Program.screenBuffer.SetCursorPosition(hStart + i, StartY + Height - presentValue - 1);
+                    //break;
+                }
+                catch (IndexOutOfRangeException)
+                {
+                    throw;
+                }
 
                 //print the char
                 try
                 {
-                    if (IsNotInProtectedZone(ProtectedData)) { Program.screenBuffer.Write(GetLineChar(presentValue, olderValue), ChartColor); }
+                    if (!IsInProtectedZone()) { Program.screenBuffer.Write(GetLineChar(presentValue, olderValue), ChartColor); }
                 }
                 catch (IndexOutOfRangeException)
                 {
@@ -318,15 +296,20 @@ namespace WinTop.Graphics
         }
 
         /// <summary>
-        /// checks if 
+        /// checks if the cursor position in the screenbuffer is inside a protected zone
         /// </summary>
-        /// <param name="protectedData"></param>
-        /// <returns></returns>
-        private bool IsNotInProtectedZone(int[] protectedData)
+        /// <returns>true if not in protected zone</returns>
+        private bool IsInProtectedZone()
         {
-            return !(Program.screenBuffer.CursorLeft <= ProtectedData[0] && Program.screenBuffer.CursorTop <= ProtectedData[1]);
+            return Program.screenBuffer.CursorLeft <= ProtectedData[0] && Program.screenBuffer.CursorTop <= ProtectedData[1];
         }
 
+        /// <summary>
+        /// prints the vertical line between two extremity of a vertical in a line chart
+        /// </summary>
+        /// <param name="presentValue">the current value of the line chart</param>
+        /// <param name="olderValue">the older value of the line chart (where the chart is going</param>
+        /// <param name="hPos">the current horizontal position in the chart</param>
         private void PrintVeticalLines(int presentValue, int olderValue, int hPos)
         {
 
@@ -348,7 +331,7 @@ namespace WinTop.Graphics
                 {
                     
                     Program.screenBuffer.CursorTop = i;
-                    if (IsNotInProtectedZone(ProtectedData))
+                    if (!IsInProtectedZone())
                     {
                         Program.screenBuffer.Write(LINE_VERTICAL, ChartColor);
                         Program.screenBuffer.CursorLeft--;
@@ -364,7 +347,7 @@ namespace WinTop.Graphics
                 for (int i = start - 1; i > end; i--)
                 {
                     Program.screenBuffer.CursorTop = i;
-                    if (IsNotInProtectedZone(ProtectedData))
+                    if (!IsInProtectedZone())
                     {
                         Program.screenBuffer.Write(LINE_VERTICAL, ChartColor);
                         Program.screenBuffer.CursorLeft--;
@@ -377,7 +360,7 @@ namespace WinTop.Graphics
 
             //write the last char
             Program.screenBuffer.CursorTop = end;
-            if (IsNotInProtectedZone(ProtectedData))
+            if (!IsInProtectedZone())
             {
                 Program.screenBuffer.Write(endChar, ChartColor);
                 Program.screenBuffer.CursorLeft--;
@@ -385,6 +368,12 @@ namespace WinTop.Graphics
             
         }
 
+        /// <summary>
+        /// returns the character for the going direction of the line chart
+        /// </summary>
+        /// <param name="presentValue">the current value of the line chart</param>
+        /// <param name="olderValue">the older value (next in line_ of the line chart</param>
+        /// <returns>the correctu character for continuing the line chart</returns>
         private char GetLineChar(float presentValue, float olderValue)
         {
             if (olderValue > presentValue)
@@ -403,6 +392,10 @@ namespace WinTop.Graphics
             return LINE_DOWN;
         }
 
+        /// <summary>
+        /// updates the data set of the chart
+        /// </summary>
+        /// <param name="newData">the data to replace the current one</param>
         public void UpdateDataSet(List<float> newData)
         {
             //remove data out of the range of the width
@@ -418,6 +411,13 @@ namespace WinTop.Graphics
             DataSet = newData;
         }
 
+        /// <summary>
+        /// method to return the vertical value as a ratio of the data toward the maximum
+        /// </summary>
+        /// <param name="data">the current value</param>
+        /// <param name="max">the maximum value</param>
+        /// <param name="height">the maximum height in the chart</param>
+        /// <returns>the ratio equivalent of x/height = data/max</returns>
         private static int VerticalValue(float data, float max, int height)
         {
             float percent = data / max;
@@ -425,6 +425,5 @@ namespace WinTop.Graphics
 
             return result < height ? result : height - 1;
         }
-
     }
 }

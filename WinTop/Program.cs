@@ -11,23 +11,50 @@ using WinTop.Graphics;
 
 namespace WinTop
 {
+    
     class Program
     {
 
+        /// <summary>
+        /// Screen buffer used in the program
+        /// </summary>
         public static ScreenBuffer screenBuffer = new ScreenBuffer(Console.WindowWidth, Console.WindowHeight - 1);
-        public static List<Frame> appFrames = Create.Frames();
-        public static List<CPU> cpuCores = Create.CPUCores();
-        public static List<Disk> disks = Create.Disks();
-        public static Memory memory = Create.MemoryCounter();
-        private static bool keepRunning = true;
         
+        /// <summary>
+        /// List of frames used in the program
+        /// </summary>
+        public static List<Frame> appFrames = Create.Frames();
 
+        /// <summary>
+        /// List of cpu cores used in the program
+        /// </summary>
+        public static List<CPU> cpuCores = Create.CPUCores();
+
+        /// <summary>
+        /// list of the disk used in the program
+        /// </summary>
+        public static List<Disk> disks = Create.Disks();
+
+        /// <summary>
+        /// memory object used in the program
+        /// </summary>
+        public static Memory memory = Create.MemoryCounter();
+
+        /// <summary>
+        /// boolean confirming the program should key running. used in the cancel key delegate
+        /// </summary>
+        //private static bool keepRunning = true;
+
+        /// <summary>
+        /// entry point of the program
+        /// </summary>
         static void Main()
         {
 
             Console.OutputEncoding = Encoding.UTF8;
             int cpuGraphCount = cpuCores.Count >= 4 ? 4 : cpuCores.Count;
             int visibleFrameCount = 0;
+            bool keepRunning = true;
 
             Console.CancelKeyPress += delegate (object sender, ConsoleCancelEventArgs e)
             {
@@ -40,7 +67,7 @@ namespace WinTop
             while (keepRunning)
             {
 
-                visibleFrameCount = 0; ;
+                visibleFrameCount = 0;
 
                 try
                 {
@@ -98,16 +125,22 @@ namespace WinTop
 
             //clear the screen and formating at the end of the program
             Console.ResetColor();
+            //Console.ReadKey();
             Console.Clear();
 
         }
 
+        /// <summary>
+        /// updates the cpu information
+        /// </summary>
+        /// <param name="cpuGraphCount">number of cpu cores to include in the chart</param>
+        /// <returns>1 if the frame is visible</returns>
         private static int UpdateCPU(int cpuGraphCount)
         {
 
             int asVisibleFrame = 0;
 
-            if (appFrames[Create.CPU_FRAME].IsVisible)
+            if (appFrames[(int)Create.ProgramFrame.CpuFrame].IsVisible)
             {
 
                 asVisibleFrame = 1;
@@ -126,7 +159,7 @@ namespace WinTop
                 }
 
                 //update the cpuValue table
-                appFrames[Create.CPU_FRAME].ProtectedData = CPU.PrintCoreData(cpuCores, appFrames[Create.CPU_FRAME], 4);
+                appFrames[(int)Create.ProgramFrame.CpuFrame].ProtectedData = CPU.PrintCoreData(cpuCores, appFrames[(int)Create.ProgramFrame.CpuFrame], 4);
             }
             else
             {
@@ -139,19 +172,27 @@ namespace WinTop
             return asVisibleFrame;
         }
 
+        /// <summary>
+        /// updates the disk information
+        /// </summary>
+        /// <returns>1 if the frame is visible</returns>
         private static int UpdateDisk()
         {
             int asVisibleFrame = 0;
             
-            if (appFrames[Create.DSK_FRAME].IsVisible)
+            if (appFrames[(int)Create.ProgramFrame.DiskFrame].IsVisible)
             {
                 asVisibleFrame = 1;
-                Disk.Print(disks, appFrames[Create.DSK_FRAME]);
+                Disk.Print(disks, appFrames[(int)Create.ProgramFrame.DiskFrame]);
             }
 
             return asVisibleFrame;
         }
 
+        /// <summary>
+        /// updates the memory information
+        /// </summary>
+        /// <returns>1 if the frame is visible</returns>
         private static int UpdateMemory()
         {
             int visibleFrameCount = 0;
@@ -159,14 +200,15 @@ namespace WinTop
             memory.Update();
 
             //print info if frame is visible
-            if (appFrames[Create.MEM_FRAME].IsVisible)
+            if (appFrames[(int)Create.ProgramFrame.MemFrame].IsVisible)
             {
 
                 visibleFrameCount = 1;
 
                 memory.AreaChart.UpdatePosition(appFrames[memory.FrameIndex]);
                 memory.AreaChart.PrintChart();
-                appFrames[Create.MEM_FRAME].ProtectedData = memory.Print();
+                appFrames[(int)Create.ProgramFrame.MemFrame].ProtectedData = memory.Print();
+
             }
 
             return visibleFrameCount;

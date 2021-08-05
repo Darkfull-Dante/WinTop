@@ -40,14 +40,14 @@ namespace WinTop.Components
         /// the area chart element that the memory can use to draw its usage values
         /// </summary>
         public Chart AreaChart { get; set; }
-        
+
         /// <summary>
-        /// 
+        /// the index (inside a collection) of the frame in which the memory information is drawn
         /// </summary>
         public int FrameIndex { get; set; }
 
         /// <summary>
-        /// the index (inside a collection) of the frame in which the memory information is drawn
+        /// the total memory of the com^puter
         /// </summary>
         public ulong TotalMemory { get; set; }
         
@@ -135,6 +135,5 @@ namespace WinTop.Components
 
             return new int[] { 21, 3 };
         }
-
     }
 }

@@ -6,18 +6,52 @@ using System.Threading.Tasks;
 
 namespace WinTop.Graphics
 {
+    /// <summary>
+    /// A class for managing a second screen buffer for the console. This screen buffer implements some of the most usefull methods of the console class to try an mimic it in the most practical way possible
+    /// </summary>
     class ScreenBuffer
     {
 
+        /// <summary>
+        /// the size (in spaces) of a tab for the screen buffer
+        /// </summary>
         public const int TAB_SIZE = 8;
         
+        /// <summary>
+        /// a 2D array of character representing the futur text of the console window
+        /// </summary>
         public char[,] CharArray { get; set; }
+
+        /// <summary>
+        /// a 2D array of console color representing the colors to apply on the futur text of the console window
+        /// </summary>
         public ConsoleColor[,] ColorArray { get; set; }
+
+        /// <summary>
+        /// Width of the screen buffer
+        /// </summary>
         public int Width { get; private set; }
+
+        /// <summary>
+        /// Height of the screen buffer
+        /// </summary>
         public int Height { get; private set; }
+
+        /// <summary>
+        /// Current position of the Cursor from the left of the screen buffer (zero-based)
+        /// </summary>
         public int CursorLeft { get; set; }
+
+        /// <summary>
+        /// Current position of the Cursor from the top of the screen buffer (zero-based)
+        /// </summary>
         public int CursorTop { get; set; }
 
+        /// <summary>
+        /// object constructor of the ScreenBuffer class
+        /// </summary>
+        /// <param name="charArray">a 2D array of character representing the futur text of the console window</param>
+        /// <param name="colorArray">a 2D array of console color representing the colors to apply on the futur text of the console window</param>
         public ScreenBuffer(char[,] charArray, ConsoleColor[,] colorArray)
         {
             CharArray = charArray;
@@ -27,9 +61,18 @@ namespace WinTop.Graphics
             CursorLeft = 0;
             CursorTop = 0;
         }
-
+        
+        /// <summary>
+        /// object constructor of the ScreenBuffer class
+        /// </summary>
+        /// <param name="width">Width of the screen buffer</param>
+        /// <param name="height">Height of the screen buffer</param>
         public ScreenBuffer(int width, int height) : this(new char[width, height], new ConsoleColor[width, height]) { }
 
+        /// <summary>
+        /// writes text to the screen buffer with the current color of the console foreground
+        /// </summary>
+        /// <param name="text">a string of text</param>
         public void Write(string text)
         {
             try
@@ -40,6 +83,10 @@ namespace WinTop.Graphics
             
         }
 
+        /// <summary>
+        /// writes a character to the screen buffer with the current color of the console foreground
+        /// </summary>
+        /// <param name="c">character to print</param>
         public void Write(char c)
         {
             try
@@ -50,6 +97,11 @@ namespace WinTop.Graphics
             
         }
 
+        /// <summary>
+        /// writes a character to the screen buffer
+        /// </summary>
+        /// <param name="c">character to print</param>
+        /// <param name="color">color of the text</param>
         public void Write(char c, ConsoleColor color)
         {
             switch (c)
@@ -90,7 +142,12 @@ namespace WinTop.Graphics
                     break;
             }
         }
-        
+
+        /// <summary>
+        /// writes text to the screen buffer
+        /// </summary>
+        /// <param name="text">a string of text</param>
+        /// <param name="color">color of the text</param>
         public void Write(string text, ConsoleColor color)
         {
             for (int i = 0; i < text.Length; i++)
@@ -109,14 +166,27 @@ namespace WinTop.Graphics
             }
         }
 
+        /// <summary>
+        /// set the cursor to the x:y position in the screen buffer 
+        /// </summary>
+        /// <param name="x">horizontal position</param>
+        /// <param name="y">vertical position</param>
         public void SetCursorPosition(int x, int y)
         {
             CursorLeft = x;
             CursorTop = y;
         }
 
+        /// <summary>
+        /// writes text to the screen buffer with a new line character at the end
+        /// </summary>
+        /// <param name="text">a string of text</param>
+        /// <param name="color">color of the text</param>
         public void WriteLine(string text, ConsoleColor color)
         {
+
+            text += "\n";
+            
             try
             {
                 Write(text, color);
@@ -126,14 +196,21 @@ namespace WinTop.Graphics
 
                 throw;
             }
-            SetCursorPosition(0, CursorTop);
         }
 
+        /// <summary>
+        /// updates the size of the screen buffer to the current size of the console window size
+        /// </summary>
         public void UpdateBufferSize()
         {
             UpdateBufferSize(Console.WindowWidth, Console.WindowHeight - 1);
         }
 
+        /// <summary>
+        /// updates the size of the screen buffer to the width and height provided
+        /// </summary>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
         public void UpdateBufferSize(int width, int height)
         {
             Width = width;
@@ -144,6 +221,14 @@ namespace WinTop.Graphics
             ColorArray = ResizeArray(ColorArray, width, height);
         }
 
+        /// <summary>
+        /// Resizes a 2 dimensional array
+        /// </summary>
+        /// <typeparam name="T">the type of value the array olds</typeparam>
+        /// <param name="original">the original array</param>
+        /// <param name="width">new width of the array</param>
+        /// <param name="height">new height of the array</param>
+        /// <returns>resized array</returns>
         private T[,] ResizeArray<T>(T[,] original, int width, int height)
         {
             var newArray = new T[width, height];
@@ -155,12 +240,18 @@ namespace WinTop.Graphics
             return newArray;
         }
 
+        /// <summary>
+        /// clears the screen buffer
+        /// </summary>
         public void Clear()
         {
             CharArray = new char[Width, Height];
             ColorArray = new ConsoleColor[Width, Height];
         }
 
+        /// <summary>
+        /// prints the screen buffer
+        /// </summary>
         public void Print()
         {
             try
@@ -179,16 +270,9 @@ namespace WinTop.Graphics
                     }
                 }
 
-                
-
                 Console.ResetColor();
             }
-            catch (IndexOutOfRangeException)
-            {
-
-                throw;
-            }
-            
+            catch (IndexOutOfRangeException) { throw; }
         }
     }
 }

@@ -20,7 +20,7 @@ namespace WinTop.Components
         /// <summary>
         /// The object containing the drive information
         /// </summary>
-        private DriveInfo Drive { get; set; }
+        public DriveInfo Drive { get; set; }
 
         /// <summary>
         /// the root letter of the drive
@@ -88,6 +88,5 @@ namespace WinTop.Components
                 Program.screenBuffer.Write(disks[i].ToString());
             }
         }
-
     }
 }

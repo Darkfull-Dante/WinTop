@@ -170,7 +170,7 @@ namespace WinTop.Components
 
             }
 
-            int[] result = { stringLength + lastMaxColumnLength + 1, numberOfRows };
+            int[] result = { 1, numberOfRows };
 
             return result;
         }

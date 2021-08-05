@@ -11,16 +11,16 @@ using Microsoft.VisualBasic.Devices;
 
 namespace WinTop
 {
-
+    /// <summary>
+    /// class used for the creation of different elements in the program
+    /// </summary>
     class Create
     {
 
-        public const int CPU_FRAME = 0;
-        public const int DSK_FRAME = 1;
-        public const int TMP_FRAME = 2;
-        public const int MEM_FRAME = 3;
-        public const int PRC_FRAME = 4;
-        public const int NTW_FRAME = 5;
+        /// <summary>
+        /// enumaration of the different frames
+        /// </summary>
+        public enum ProgramFrame { CpuFrame, DiskFrame, TempFrame, MemFrame, PrcFrame, NetwFrame}
 
         /// <summary>
         /// creates the frames to be used by main
@@ -40,11 +40,19 @@ namespace WinTop
             return frames;
         }
 
+        /// <summary>
+        /// creates the memory counter
+        /// </summary>
+        /// <returns>memory performance counter</returns>
         public static Memory MemoryCounter()
         {
-            return new Memory(new ComputerInfo(), new Chart(Chart.LineType.AreaChart, Program.appFrames[MEM_FRAME], Memory.CHART_COLOR, MEM_FRAME), MEM_FRAME);
+            return new Memory(new ComputerInfo(), new Chart(Chart.LineType.AreaChart, Program.appFrames[(int)ProgramFrame.MemFrame], Memory.CHART_COLOR, (int)ProgramFrame.MemFrame), (int)ProgramFrame.MemFrame);
         }
 
+        /// <summary>
+        /// creates the cpucores list for the performance counters
+        /// </summary>
+        /// <returns>list of the cpu cores objects</returns>
         public static List<CPU> CPUCores()
         {
             int coreCount = Environment.ProcessorCount;
@@ -54,12 +62,16 @@ namespace WinTop
 
             for (int i = 0; i < coreCount; i++)
             {
-                cpuCores.Add(new CPU(new PerformanceCounter("Processor", "% Processor Time", i.ToString()), new Chart(Program.appFrames[CPU_FRAME], CPU.CPUColor(i), CPU_FRAME), CPU_FRAME));
+                cpuCores.Add(new CPU(new PerformanceCounter("Processor", "% Processor Time", i.ToString()), new Chart(Program.appFrames[(int)ProgramFrame.CpuFrame], CPU.CPUColor(i), (int)ProgramFrame.CpuFrame), (int)ProgramFrame.CpuFrame));
             }
 
             return cpuCores;
         }
 
+        /// <summary>
+        /// creates the list of disks for uses in the disk frame
+        /// </summary>
+        /// <returns>list of disks</returns>
         public static List<Disk> Disks()
         {
             DriveInfo[] driveInfos = DriveInfo.GetDrives();
@@ -67,7 +79,7 @@ namespace WinTop
 
             foreach (DriveInfo drive in driveInfos)
             {
-                if (drive.IsReady) { disks.Add(new Disk(drive)); }
+                if (drive.IsReady && drive.DriveType.ToString() != "Removable" /*&& drive.DriveType.ToString() != "Network"*/) { disks.Add(new Disk(drive)); }
             }
 
             return disks;

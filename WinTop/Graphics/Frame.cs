@@ -9,20 +9,49 @@ namespace WinTop.Graphics
     class Frame
     {
 
+        /// <summary>
+        /// the console color for the frame itself
+        /// </summary>
         private const ConsoleColor FRAME_COLOR = ConsoleColor.Cyan;
+
+        /// <summary>
+        /// the console color for the title
+        /// </summary>
         private const ConsoleColor TITLE_COLOR = ConsoleColor.White;
 
+        /// <summary>
+        /// the character for a vertical line in the frame
+        /// </summary>
         private const char FRAME_VERTICAL = '│';
+
+        /// <summary>
+        /// the character for an horizontal line in the frame
+        /// </summary>
         private const char FRAME_HORIZONTAL = '─';
+
+        /// <summary>
+        /// the character for a top left corner in the frame
+        /// </summary>
         private const char FRAME_TOP_LEFT = '╭';
+
+        /// <summary>
+        /// the character for a top right corner in the frame
+        /// </summary>
         private const char FRAME_TOP_RIGHT = '╮';
+
+        /// <summary>
+        /// the character for a bottom left corner in the frame
+        /// </summary>
         private const char FRAME_BOTTOM_LEFT = '╰';
+
+        /// <summary>
+        /// the character for bottom right corner in the frame
+        /// </summary>
         private const char FRAME_BOTTOM_RIGHT = '╯';
 
         /// <summary>
-        /// Gets or sets the Width of the frame. Zero to take the rest of the space
+        /// Width of the frame
         /// </summary>
-        private int width;
         public int Width
         {
             get
@@ -39,11 +68,11 @@ namespace WinTop.Graphics
 
             set { width = value; }
         }
+        private int width;
 
         /// <summary>
-        /// Gets or sets the height of the frame. Zero to take the rest of the sace
+        /// Height of the frame
         /// </summary>
-        private int height;
         public int Height
         {
             get
@@ -59,36 +88,53 @@ namespace WinTop.Graphics
             }
             set { height = value; }
         }
+        private int height;
 
         /// <summary>
-        /// Gets or sets the Title of the frame. Null for no title
+        /// Title of the frame. If empty, no title is printed
         /// </summary>
         public string Title { get; set; }
 
         /// <summary>
-        /// Gets or sets the horizontal start position of the frame.
+        /// starting position on the x axis of the frame
         /// </summary>
         public int PosX { get; set; }
 
         /// <summary>
-        /// Gets or sets the vertical start position of the frame.
+        /// starting position on the y axis of the frame
         /// </summary>
         public int PosY { get; set; }
 
         /// <summary>
-        /// Gets or sets the minimum Width for the frame to appears.
+        /// Minimum width needed to print the frame
         /// </summary>
         public int MinWidth { get; set; }
 
         /// <summary>
-        /// Gets or sets the minimum height for the frame to appears.
+        /// Minimum heght nedded to print the frame
         /// </summary>
         public int MinHeight { get; set; }
 
+        /// <summary>
+        /// boolean informing if the frame is currently visible
+        /// </summary>
         public bool IsVisible { get; private set; }
 
+        /// <summary>
+        /// array containing {width, height} value of the protected data inside the frame
+        /// </summary>
         public int[] ProtectedData { get; set; }
 
+        /// <summary>
+        /// object of the constructor of the Frame class
+        /// </summary>
+        /// <param name="width">Width of the frame</param>
+        /// <param name="height">Height of the frame</param>
+        /// <param name="title">Title of the frame</param>
+        /// <param name="posX">starting position on the x axis of the frame</param>
+        /// <param name="posY">starting position on the y axis of the frame</param>
+        /// <param name="minWidth">Minimum width needed to print the frame</param>
+        /// <param name="minHeight">Minimum heght nedded to print the frame</param>
         public Frame(int width, int height, string title, int posX, int posY, int minWidth, int minHeight)
         {
             Width = width;
@@ -102,6 +148,10 @@ namespace WinTop.Graphics
             ProtectedData = new int[] { 0, 0 };
         }
 
+        /// <summary>
+        /// updates a list of frames and prints them to the screen Buffer
+        /// </summary>
+        /// <param name="frames">a list of frame object</param>
         public static void UpdateFrame(List<Frame> frames)
         {
             bool valid;
@@ -143,6 +193,9 @@ namespace WinTop.Graphics
             while (!valid);
         }
 
+        /// <summary>
+        /// draws the frame on the screen buffer
+        /// </summary>
         public void Draw()
         {
 
@@ -177,6 +230,9 @@ namespace WinTop.Graphics
             
         }
 
+        /// <summary>
+        /// clears the content area of the frame
+        /// </summary>
         public void Clear()
         {
             if (IsVisible)
@@ -201,7 +257,6 @@ namespace WinTop.Graphics
                     }
                     catch (ArgumentOutOfRangeException)
                     {
-
                         throw;
                     }
                     catch (IndexOutOfRangeException)
@@ -214,6 +269,9 @@ namespace WinTop.Graphics
             
         }
 
+        /// <summary>
+        /// prints the bottom line of the frame
+        /// </summary>
         private void BottomLine()
         {
             try
@@ -228,6 +286,9 @@ namespace WinTop.Graphics
             Program.screenBuffer.Write(string.Format("{0}{1}{2}", FRAME_BOTTOM_LEFT, new string(FRAME_HORIZONTAL, Width - 2), FRAME_BOTTOM_RIGHT), FRAME_COLOR);
         }
 
+        /// <summary>
+        /// prints the columns of the frame
+        /// </summary>
         private void ColumnPrint()
         {
             int endH = PosY + Height;
@@ -254,6 +315,9 @@ namespace WinTop.Graphics
 
         }
 
+        /// <summary>
+        /// prints the title line of the frame
+        /// </summary>
         private void TitleLine()
         {
 
