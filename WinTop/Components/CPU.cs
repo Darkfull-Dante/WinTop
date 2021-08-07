@@ -122,29 +122,32 @@ namespace WinTop.Components
         /// <returns>an array of integer containing the {width, height} of the data inside the frame</returns>
         public static int[] PrintCoreData(List<CPU> cpuCores, Frame frame, int numberOfRows)
         {
-
-            int currentMaxColumnLength = 0;
-            int lastMaxColumnLength = 0;
-            int stringLength = 0;
+            int maxStringLength = 0;
+            int maxHorizontal = 0;
+            int columnCount = 0;
 
             for(int i = 0; i < cpuCores.Count; i++)
             {
                 //get current core value
                 string cpuValue = cpuCores[i].ToString();
-                stringLength = cpuValue.Length;
+                int stringLength = cpuValue.Length;
+                columnCount = i / numberOfRows;
 
                 //reset maxColumnLength if new column
-                if(i % numberOfRows == 0)
+                if (i % numberOfRows == 0)
                 {
-                    lastMaxColumnLength = currentMaxColumnLength;
+                    maxHorizontal += maxStringLength;
                 }
 
                 //update max value
-                if(stringLength + lastMaxColumnLength > currentMaxColumnLength) { currentMaxColumnLength = stringLength + lastMaxColumnLength; }
-                
+                if (maxStringLength < stringLength)
+                {
+                    maxStringLength = stringLength;
+                }
+
                 //get position value
                 int v = frame.PosY + 1 + (i % numberOfRows);
-                int h = frame.PosX + 1 + lastMaxColumnLength + 2 * (i / numberOfRows);
+                int h = frame.PosX + 1 + maxHorizontal + 2 * columnCount;
 
                 //check if position is possible and data can fit
                 if (h + stringLength <= frame.PosX + frame.Width - 2)
@@ -170,7 +173,7 @@ namespace WinTop.Components
 
             }
 
-            int[] result = { 1, numberOfRows };
+            int[] result = { maxHorizontal + maxStringLength + 2 * columnCount + 1, numberOfRows };
 
             return result;
         }

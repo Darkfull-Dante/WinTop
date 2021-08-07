@@ -40,10 +40,7 @@ namespace WinTop
         /// </summary>
         public static Memory memory = Create.MemoryCounter();
 
-        /// <summary>
-        /// boolean confirming the program should key running. used in the cancel key delegate
-        /// </summary>
-        //private static bool keepRunning = true;
+        public static List<TemperatureSensor> temperatureSensors = Create.TemperatureSensors();
 
         /// <summary>
         /// entry point of the program
@@ -61,8 +58,6 @@ namespace WinTop
                 e.Cancel = true;
                 keepRunning = false;
             };
-
-            //Frame.UpdateFrame(appFrames);
 
             while (keepRunning)
             {

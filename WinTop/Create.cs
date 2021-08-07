@@ -8,6 +8,7 @@ using WinTop.Components;
 using WinTop.Graphics;
 using System.IO;
 using Microsoft.VisualBasic.Devices;
+using OpenHardwareMonitor.Hardware;
 
 namespace WinTop
 {
@@ -84,5 +85,55 @@ namespace WinTop
 
             return disks;
         }
+
+        public static List<TemperatureSensor> TemperatureSensors()
+        {
+            List<TemperatureSensor> temperatureSensors = new List<TemperatureSensor>();
+
+            //create the computer information data
+            UpdateVisitor updateVisitor = new UpdateVisitor();
+            OpenHardwareMonitor.Hardware.Computer computer = new OpenHardwareMonitor.Hardware.Computer();
+
+            computer.Open();
+            
+            //enable components
+            computer.CPUEnabled = true;
+            computer.FanControllerEnabled = true;
+            computer.GPUEnabled = true;
+            computer.HDDEnabled = true;
+            computer.MainboardEnabled = true;
+            computer.RAMEnabled = true;
+
+            computer.Accept(updateVisitor);
+
+            //find every relevant temperature sensor and add them to list
+            foreach(IHardware hardware in computer.Hardware)
+            {
+                TemperatureSensor tempSensor = new TemperatureSensor(hardware);
+
+                if (tempSensor.Sensor != null)
+                {
+                    temperatureSensors.Add(tempSensor);
+                }
+            }
+
+            return temperatureSensors;
+        }
+
+        public class UpdateVisitor : IVisitor
+        {
+            public void VisitComputer(IComputer computer)
+            {
+                computer.Traverse(this);
+            }
+            public void VisitHardware(IHardware hardware)
+            {
+                hardware.Update();
+                foreach (IHardware subHardware in hardware.SubHardware) subHardware.Accept(this);
+            }
+            public void VisitSensor(ISensor sensor) { }
+            public void VisitParameter(IParameter parameter) { }
+        }
+
     }
 }
