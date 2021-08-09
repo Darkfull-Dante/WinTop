@@ -15,6 +15,10 @@ namespace WinTop
     class Program
     {
 
+        private static Timer timer = null;
+
+        //private static int cpuGraphCount;
+
         /// <summary>
         /// Screen buffer used in the program
         /// </summary>
@@ -51,9 +55,12 @@ namespace WinTop
         static void Main()
         {
             
+           
             Console.OutputEncoding = Encoding.UTF8;
             int cpuGraphCount = cpuCores.Count >= 4 ? 4 : cpuCores.Count;
             bool keepRunning = true;
+
+            timer = new Timer(Loop, cpuGraphCount, 0, 1000);
 
             Console.CancelKeyPress += delegate (object sender, ConsoleCancelEventArgs e)
             {
@@ -61,23 +68,27 @@ namespace WinTop
                 keepRunning = false;
             };
 
-            //loop through the program until cancel key is pressed
-            while (keepRunning) { Loop(cpuGraphCount); }
+            while (keepRunning) { }
+
+            timer.Dispose();
 
             //clear the screen and formating at the end of the program
             Console.ResetColor();
-            //Console.ReadKey();
             Console.Clear();
+            
+
+            Console.Write("Press <Enter> to exit... ");
+            while (Console.ReadKey().Key != ConsoleKey.Enter) {}
 
         }
 
         /// <summary>
         /// Main loop of the program to run until the cancel key is pressed
         /// </summary>
-        /// <param name="cpuGraphCount">number of cpuCore to print</param>
-        private static void Loop(int cpuGraphCount)
+        /// <param name="o">Object containing the number of cpuCore to print</param>
+        private static void Loop(Object o)
         {
-            //TO-DO: move all the inside loop to a private method
+            int cpuGraphCount = (int)o;
             int visibleFrameCount = 0;
 
             try
