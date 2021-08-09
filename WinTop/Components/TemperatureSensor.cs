@@ -76,19 +76,39 @@ namespace WinTop.Components
 
         public void Update()
         {
+
+            Sensor.Hardware.Update();
+            
             CurrentValue = (float)Sensor.Value;
             CurrentMin = (float)Sensor.Min;
             CurrentMax = (float)Sensor.Max;
         }
 
+        private string ShortenedString(string s, int n)
+        {
+            return s.Length < n ? s.PadRight(n) : s.Substring(0, n);
+        }
+
+
         public override string ToString()
         {
-            return string.Format("{0}\t{1:f}\t{2:f}\t{3:f}", Hardware, CurrentValue, CurrentMin, CurrentMax);
+            return string.Format("{0} {1}°C {2}°C {3}°C", ShortenedString(Hardware, 9), CurrentValue.ToString("N0").PadLeft(3), CurrentMin.ToString("N0").PadLeft(3), CurrentMax.ToString("N0").PadLeft(3));
         }
 
         public static void Print(List<TemperatureSensor> temperatureSensors, Frame frame)
         {
-            
+            //print the title line
+            Program.screenBuffer.SetCursorPosition(frame.PosX + 1, frame.PosY + 1);
+            Program.screenBuffer.Write("Sensor    Value Min   Max");
+
+            //check the max possible number of sensor to print
+            int maxSensor = Math.Min(temperatureSensors.Count, frame.Height - 2);
+
+            for (int i = 0; i < maxSensor; i++)
+            {
+                Program.screenBuffer.SetCursorPosition(frame.PosX + 1, frame.PosY + 2 + i);
+                Program.screenBuffer.Write(temperatureSensors[i].ToString());
+            }
         }
     }
 }

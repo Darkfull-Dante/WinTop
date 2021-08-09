@@ -14,7 +14,7 @@ namespace WinTop
     
     class Program
     {
-
+        //TO-DO: refactor add to main method
         /// <summary>
         /// Screen buffer used in the program
         /// </summary>
@@ -48,6 +48,8 @@ namespace WinTop
         static void Main()
         {
 
+            //TO-DO: add computer creation
+            
             Console.OutputEncoding = Encoding.UTF8;
             int cpuGraphCount = cpuCores.Count >= 4 ? 4 : cpuCores.Count;
             int visibleFrameCount = 0;
@@ -59,9 +61,11 @@ namespace WinTop
                 keepRunning = false;
             };
 
+            //TO-DO: update to timer management
             while (keepRunning)
             {
 
+                //TO-DO: move all the inside loop to a private method
                 visibleFrameCount = 0;
 
                 try
@@ -80,6 +84,7 @@ namespace WinTop
                     visibleFrameCount += UpdateMemory();
 
                     //update the temperature frame
+                    visibleFrameCount += UpdateTemperature();
 
                     //update the process frame
 
@@ -134,8 +139,9 @@ namespace WinTop
         {
 
             int asVisibleFrame = 0;
+            int frameIndex = (int)Create.ProgramFrame.CpuFrame;
 
-            if (appFrames[(int)Create.ProgramFrame.CpuFrame].IsVisible)
+            if (appFrames[frameIndex].IsVisible)
             {
 
                 asVisibleFrame = 1;
@@ -154,7 +160,7 @@ namespace WinTop
                 }
 
                 //update the cpuValue table
-                appFrames[(int)Create.ProgramFrame.CpuFrame].ProtectedData = CPU.PrintCoreData(cpuCores, appFrames[(int)Create.ProgramFrame.CpuFrame], 4);
+                appFrames[frameIndex].ProtectedData = CPU.PrintCoreData(cpuCores, appFrames[frameIndex], 4);
             }
             else
             {
@@ -174,11 +180,12 @@ namespace WinTop
         private static int UpdateDisk()
         {
             int asVisibleFrame = 0;
+            int frameIndex = (int)Create.ProgramFrame.DiskFrame;
             
-            if (appFrames[(int)Create.ProgramFrame.DiskFrame].IsVisible)
+            if (appFrames[frameIndex].IsVisible)
             {
                 asVisibleFrame = 1;
-                Disk.Print(disks, appFrames[(int)Create.ProgramFrame.DiskFrame]);
+                Disk.Print(disks, appFrames[frameIndex]);
             }
 
             return asVisibleFrame;
@@ -191,22 +198,47 @@ namespace WinTop
         private static int UpdateMemory()
         {
             int visibleFrameCount = 0;
+            int frameIndex = (int)Create.ProgramFrame.MemFrame;
 
             memory.Update();
 
             //print info if frame is visible
-            if (appFrames[(int)Create.ProgramFrame.MemFrame].IsVisible)
+            if (appFrames[frameIndex].IsVisible)
             {
 
                 visibleFrameCount = 1;
 
                 memory.AreaChart.UpdatePosition(appFrames[memory.FrameIndex]);
                 memory.AreaChart.PrintChart();
-                appFrames[(int)Create.ProgramFrame.MemFrame].ProtectedData = memory.Print();
+                appFrames[frameIndex].ProtectedData = memory.Print();
 
             }
 
             return visibleFrameCount;
+        }
+
+        /// <summary>
+        /// updates the temperature information
+        /// </summary>
+        /// <returns>1 if the frame is visible</returns>
+        private static int UpdateTemperature()
+        {
+            int asVisibleFrame = 0;
+            int frameIndex = (int)Create.ProgramFrame.TempFrame;
+
+            if (appFrames[frameIndex].IsVisible)
+            {
+                asVisibleFrame = 1;
+
+                foreach(TemperatureSensor temperatureSensor in temperatureSensors)
+                {
+                    temperatureSensor.Update();
+                }
+
+                TemperatureSensor.Print(temperatureSensors, appFrames[frameIndex]);
+            }
+
+            return asVisibleFrame;
         }
     }
 } 
