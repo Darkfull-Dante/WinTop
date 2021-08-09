@@ -14,7 +14,7 @@ namespace WinTop
     
     class Program
     {
-        //TO-DO: refactor add to main method
+
         /// <summary>
         /// Screen buffer used in the program
         /// </summary>
@@ -53,7 +53,6 @@ namespace WinTop
             
             Console.OutputEncoding = Encoding.UTF8;
             int cpuGraphCount = cpuCores.Count >= 4 ? 4 : cpuCores.Count;
-            int visibleFrameCount = 0;
             bool keepRunning = true;
 
             Console.CancelKeyPress += delegate (object sender, ConsoleCancelEventArgs e)
@@ -62,73 +61,77 @@ namespace WinTop
                 keepRunning = false;
             };
 
-            //TO-DO: update to timer management
-            while (keepRunning)
-            {
-
-                //TO-DO: move all the inside loop to a private method
-                visibleFrameCount = 0;
-
-                try
-                {
-                    //update the frames
-                    Frame.UpdateFrame(appFrames);
-
-                    //update the cpu graph
-                    visibleFrameCount += UpdateCPU(cpuGraphCount);
-
-
-                    //print the disks details
-                    visibleFrameCount += UpdateDisk();
-
-                    //update Memory history
-                    visibleFrameCount += UpdateMemory();
-
-                    //update the temperature frame
-                    visibleFrameCount += UpdateTemperature();
-
-                    //update the process frame
-
-                    //update the network frame
-
-                    //print relevant data
-                    if (visibleFrameCount > 0)
-                    {
-                        screenBuffer.Print();
-                    }
-                    else
-                    {
-                        Console.Clear();
-                        Console.WriteLine("Window too small\nPlease resize.");
-                    }
-
-                    //wait before update
-                    Thread.Sleep(100);
-
-                }
-                catch (Exception ex)
-                {
-                    if (ex is ArgumentOutOfRangeException || ex is IndexOutOfRangeException)
-                    {
-                        Frame.UpdateFrame(appFrames);
-                    }
-                    else
-                    {
-                        throw;
-                    } 
-                }
-                finally
-                {
-                    screenBuffer.Clear();
-                }
-
-            }
+            //loop through the program until cancel key is pressed
+            while (keepRunning) { Loop(cpuGraphCount); }
 
             //clear the screen and formating at the end of the program
             Console.ResetColor();
             //Console.ReadKey();
             Console.Clear();
 
+        }
+
+        /// <summary>
+        /// Main loop of the program to run until the cancel key is pressed
+        /// </summary>
+        /// <param name="cpuGraphCount">number of cpuCore to print</param>
+        private static void Loop(int cpuGraphCount)
+        {
+            //TO-DO: move all the inside loop to a private method
+            int visibleFrameCount = 0;
+
+            try
+            {
+                //update the frames
+                Frame.UpdateFrame(appFrames);
+
+                //update the cpu graph
+                visibleFrameCount += UpdateCPU(cpuGraphCount);
+
+
+                //print the disks details
+                visibleFrameCount += UpdateDisk();
+
+                //update Memory history
+                visibleFrameCount += UpdateMemory();
+
+                //update the temperature frame
+                visibleFrameCount += UpdateTemperature();
+
+                //update the process frame
+
+                //update the network frame
+
+                //print relevant data
+                if (visibleFrameCount > 0)
+                {
+                    screenBuffer.Print();
+                }
+                else
+                {
+                    Console.Clear();
+                    Console.WriteLine("Window too small\nPlease resize.");
+                }
+
+                //wait before update
+                Thread.Sleep(100);
+
+            }
+            catch (Exception ex)
+            {
+                if (ex is ArgumentOutOfRangeException || ex is IndexOutOfRangeException)
+                {
+                    Frame.UpdateFrame(appFrames);
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            finally
+            {
+                screenBuffer.Clear();
+            }
         }
 
         /// <summary>
