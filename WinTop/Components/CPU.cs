@@ -173,7 +173,7 @@ namespace WinTop.Components
 
             }
 
-            int[] result = { maxHorizontal + maxStringLength + 2 * columnCount + 1, numberOfRows };
+            int[] result = { 0, 0 };
 
             return result;
         }
