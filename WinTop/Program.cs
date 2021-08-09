@@ -40,6 +40,9 @@ namespace WinTop
         /// </summary>
         public static Memory memory = Create.MemoryCounter();
 
+        /// <summary>
+        /// list of temperature sensors
+        /// </summary>
         public static List<TemperatureSensor> temperatureSensors = Create.TemperatureSensors();
 
         /// <summary>
@@ -47,8 +50,6 @@ namespace WinTop
         /// </summary>
         static void Main()
         {
-
-            //TO-DO: add computer creation
             
             Console.OutputEncoding = Encoding.UTF8;
             int cpuGraphCount = cpuCores.Count >= 4 ? 4 : cpuCores.Count;
