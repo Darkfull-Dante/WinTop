@@ -59,6 +59,7 @@
     <Compile Include="Create.cs" />
     <Compile Include="Components\Disk.cs" />
     <Compile Include="Graphics\Frame.cs" />
+    <Compile Include="Components\ProcessCounter.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Graphics\ScreenBuffer.cs" />

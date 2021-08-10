@@ -15,9 +15,10 @@ namespace WinTop
     class Program
     {
 
+        /// <summary>
+        /// the timer object managing time keeping
+        /// </summary>
         private static Timer timer = null;
-
-        //private static int cpuGraphCount;
 
         /// <summary>
         /// Screen buffer used in the program
@@ -52,10 +53,9 @@ namespace WinTop
         /// <summary>
         /// entry point of the program
         /// </summary>
-        static void Main()
+        static void Main(string[] args)
         {
             
-           
             Console.OutputEncoding = Encoding.UTF8;
             int cpuGraphCount = cpuCores.Count >= 4 ? 4 : cpuCores.Count;
             bool keepRunning = true;
@@ -68,7 +68,7 @@ namespace WinTop
                 keepRunning = false;
             };
 
-            while (keepRunning) { }
+            while (keepRunning) { /*Loop(cpuGraphCount);*/ }
 
             timer.Dispose();
 
@@ -86,7 +86,7 @@ namespace WinTop
         /// Main loop of the program to run until the cancel key is pressed
         /// </summary>
         /// <param name="o">Object containing the number of cpuCore to print</param>
-        private static void Loop(Object o)
+        private static void Loop(object o)
         {
             int cpuGraphCount = (int)o;
             int visibleFrameCount = 0;
@@ -110,8 +110,10 @@ namespace WinTop
                 visibleFrameCount += UpdateTemperature();
 
                 //update the process frame
+                //visibleFrameCount += UpdateProcesses();
 
                 //update the network frame
+                visibleFrameCount += UpdateNetwork();
 
                 //print relevant data
                 if (visibleFrameCount > 0)
@@ -125,7 +127,7 @@ namespace WinTop
                 }
 
                 //wait before update
-                Thread.Sleep(100);
+                //Thread.Sleep(100);
 
             }
             catch (Exception ex)
@@ -254,6 +256,24 @@ namespace WinTop
             }
 
             return asVisibleFrame;
+        }
+
+        //method too slow, must find alternate solution
+        private static int UpdateProcesses()
+        {
+
+            if(appFrames[(int)Create.ProgramFrame.PrcFrame].IsVisible)
+            {
+                List<ProcessCounter> processCounters = new PerformanceCounterCategory("Process").GetInstanceNames().ToList().ConvertAll(x => (ProcessCounter)x);
+            }
+
+            return 0;
+        }
+
+        //not yet implemented
+        private static int UpdateNetwork()
+        {
+            return 0;
         }
     }
 } 
