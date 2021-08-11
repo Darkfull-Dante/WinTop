@@ -21,6 +21,11 @@ namespace WinTop
         private static Timer timer = null;
 
         /// <summary>
+        /// boolean indicating if the main loop is busy or not to prevent race condition
+        /// </summary>
+        private static bool isBusy = false;
+
+        /// <summary>
         /// Screen buffer used in the program
         /// </summary>
         public static ScreenBuffer screenBuffer = new ScreenBuffer(Console.WindowWidth, Console.WindowHeight - 1);
@@ -51,6 +56,11 @@ namespace WinTop
         public static List<TemperatureSensor> temperatureSensors = Create.TemperatureSensors();
 
         /// <summary>
+        /// list of process counters
+        /// </summary>
+        public static List<ProcessCounter> processCounters = Create.ProcessCounters();
+
+        /// <summary>
         /// entry point of the program
         /// </summary>
         static void Main(string[] args)
@@ -60,7 +70,7 @@ namespace WinTop
             int cpuGraphCount = cpuCores.Count >= 4 ? 4 : cpuCores.Count;
             bool keepRunning = true;
 
-            timer = new Timer(Loop, cpuGraphCount, 0, 1000);
+            timer = new Timer(Loop, cpuGraphCount, 0, 100);
 
             Console.CancelKeyPress += delegate (object sender, ConsoleCancelEventArgs e)
             {
@@ -68,7 +78,7 @@ namespace WinTop
                 keepRunning = false;
             };
 
-            while (keepRunning) { /*Loop(cpuGraphCount);*/ }
+            while (keepRunning) { }
 
             timer.Dispose();
 
@@ -91,8 +101,15 @@ namespace WinTop
             int cpuGraphCount = (int)o;
             int visibleFrameCount = 0;
 
+            if (isBusy)
+            {
+                return;
+            }
+
             try
             {
+                isBusy = true;
+
                 //update the frames
                 Frame.UpdateFrame(appFrames);
 
@@ -110,7 +127,7 @@ namespace WinTop
                 visibleFrameCount += UpdateTemperature();
 
                 //update the process frame
-                //visibleFrameCount += UpdateProcesses();
+                visibleFrameCount += UpdateProcesses();
 
                 //update the network frame
                 visibleFrameCount += UpdateNetwork();
@@ -144,6 +161,7 @@ namespace WinTop
             finally
             {
                 screenBuffer.Clear();
+                isBusy = false;
             }
         }
 
@@ -258,16 +276,51 @@ namespace WinTop
             return asVisibleFrame;
         }
 
-        //method too slow, must find alternate solution
+        /// <summary>
+        /// updates the process counter information
+        /// </summary>
+        /// <returns>1 if frame is visible</returns>
         private static int UpdateProcesses()
         {
 
-            if(appFrames[(int)Create.ProgramFrame.PrcFrame].IsVisible)
+            const int FRAME_INDEX = (int)Create.ProgramFrame.PrcFrame;
+            int asVisibleFrame = 0;
+            
+
+            if (appFrames[FRAME_INDEX].IsVisible)
             {
-                List<ProcessCounter> processCounters = new PerformanceCounterCategory("Process").GetInstanceNames().ToList().ConvertAll(x => (ProcessCounter)x);
+
+                asVisibleFrame = 1;
+
+                List<Process> processes = Process.GetProcesses().ToList();
+
+                foreach (Process process in processes)
+                {
+                    if (!string.IsNullOrEmpty(process.MainWindowTitle) && !processCounters.Contains(new ProcessCounter(process, true)) && process.ProcessName != Process.GetCurrentProcess().ProcessName)
+                    {
+                        processCounters.Add((ProcessCounter)process);
+                    }
+                }
+
+                restart:
+                foreach (ProcessCounter processCounter in processCounters)
+                {
+                    try
+                    {
+                        processCounter.Update();
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        processCounters.Remove(processCounter);
+                        goto restart;
+                    }
+                }
+
+                ProcessCounter.Print(processCounters, appFrames[FRAME_INDEX]);
+
             }
 
-            return 0;
+            return asVisibleFrame;
         }
 
         //not yet implemented

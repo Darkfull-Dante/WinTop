@@ -87,6 +87,10 @@ namespace WinTop
             return disks;
         }
 
+        /// <summary>
+        /// creates the list of temperature sensors to use in the temerature frame
+        /// </summary>
+        /// <returns>list of temperature sensors</returns>
         public static List<TemperatureSensor> TemperatureSensors()
         {
             List<TemperatureSensor> temperatureSensors = new List<TemperatureSensor>();
@@ -119,6 +123,26 @@ namespace WinTop
             }
 
             return temperatureSensors;
+        }
+
+        /// <summary>
+        /// creates alist of process counter to use in the process frame
+        /// </summary>
+        /// <returns>list of process counter</returns>
+        public static List<ProcessCounter> ProcessCounters()
+        {
+            List<Process> processes = Process.GetProcesses().ToList();
+            List<ProcessCounter> processCounters = new List<ProcessCounter>();
+
+            foreach (Process process in processes)
+            {
+                if (!string.IsNullOrEmpty(process.MainWindowTitle) && process.ProcessName != Process.GetCurrentProcess().ProcessName)
+                {
+                    processCounters.Add(new ProcessCounter(process));
+                }
+            }
+
+            return processCounters;
         }
 
     }
