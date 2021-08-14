@@ -54,6 +54,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Components\Memory.cs" />
+    <Compile Include="Components\NetworkCounter.cs" />
     <Compile Include="Components\TemperatureSensor.cs" />
     <Compile Include="Graphics\Chart.cs" />
     <Compile Include="Components\CPU.cs" />
