@@ -73,6 +73,11 @@ namespace WinTop.Components
         }
 
         /// <summary>
+        /// object constructor of the Memory class
+        /// </summary>
+        public Memory() : this(new ComputerInfo(), null, 0) { }
+
+        /// <summary>
         /// fetches the currently available memory and update the available memory property and adds it to the history queue
         /// </summary>
         /// <returns>the currently available memory</returns>

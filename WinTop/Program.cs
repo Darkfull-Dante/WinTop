@@ -33,39 +33,46 @@ namespace WinTop
         /// <summary>
         /// List of frames used in the program
         /// </summary>
-        public static List<Frame> appFrames = Create.Frames();
+        public static List<Frame> appFrames = new List<Frame>();
 
         /// <summary>
         /// List of cpu cores used in the program
         /// </summary>
-        public static List<CPU> cpuCores = Create.CPUCores();
+        public static List<CPU> cpuCores = new List<CPU>();
 
         /// <summary>
         /// list of the disk used in the program
         /// </summary>
-        public static List<Disk> disks = Create.Disks();
+        public static List<Disk> disks = new List<Disk>();
 
         /// <summary>
         /// memory object used in the program
         /// </summary>
-        public static Memory memory = Create.MemoryCounter();
+        public static Memory memory = new Memory();
 
         /// <summary>
         /// list of temperature sensors
         /// </summary>
-        public static List<TemperatureSensor> temperatureSensors = Create.TemperatureSensors();
+        public static List<TemperatureSensor> temperatureSensors = new List<TemperatureSensor>();
 
         /// <summary>
         /// list of process counters
         /// </summary>
-        public static List<ProcessCounter> processCounters = Create.ProcessCounters();
+        public static List<ProcessCounter> processCounters = new List<ProcessCounter>();
 
         /// <summary>
         /// entry point of the program
         /// </summary>
         static void Main(string[] args)
         {
-            
+            //create the list of components
+            appFrames = Create.Frames();
+            cpuCores = Create.CPUCores();
+            disks = Create.Disks();
+            memory = Create.MemoryCounter();
+            temperatureSensors = Create.TemperatureSensors();
+            processCounters = Create.ProcessCounters();
+
             Console.OutputEncoding = Encoding.UTF8;
             int cpuGraphCount = cpuCores.Count >= 4 ? 4 : cpuCores.Count;
             bool keepRunning = true;
@@ -316,7 +323,7 @@ namespace WinTop
                     }
                 }
 
-                ProcessCounter.Print(processCounters, appFrames[FRAME_INDEX]);
+                ProcessCounter.Print(new List<ProcessCounter>(processCounters.OrderByDescending(x => x.CurrentProcUsage)), appFrames[FRAME_INDEX]);
 
             }
 

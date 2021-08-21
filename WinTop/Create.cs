@@ -142,7 +142,7 @@ namespace WinTop
                 }
             }
 
-            return processCounters;
+            return new List<ProcessCounter>(processCounters.OrderByDescending(x => x.CurrentProcUsage));
         }
 
     }
