@@ -26,6 +26,11 @@ namespace WinTop
         private static bool isBusy = false;
 
         /// <summary>
+        /// The number of frame taht are visible during a screen buffre print
+        /// </summary>
+        private static int visibleFrameCount = 0;
+
+        /// <summary>
         /// Screen buffer used in the program
         /// </summary>
         public static ScreenBuffer screenBuffer = new ScreenBuffer(Console.WindowWidth, Console.WindowHeight - 1);
@@ -65,6 +70,7 @@ namespace WinTop
         /// </summary>
         static void Main(string[] args)
         {
+            
             //create the list of components
             appFrames = Create.Frames();
             cpuCores = Create.CPUCores();
@@ -77,7 +83,7 @@ namespace WinTop
             int cpuGraphCount = cpuCores.Count >= 4 ? 4 : cpuCores.Count;
             bool keepRunning = true;
 
-            timer = new Timer(Loop, cpuGraphCount, 0, 100);
+            timer = new Timer(Loop, cpuGraphCount, 0, 1000);
 
             Console.CancelKeyPress += delegate (object sender, ConsoleCancelEventArgs e)
             {
@@ -103,10 +109,10 @@ namespace WinTop
         /// Main loop of the program to run until the cancel key is pressed
         /// </summary>
         /// <param name="o">Object containing the number of cpuCore to print</param>
-        private static void Loop(object o)
+        private static async void Loop(object o)
         {
             int cpuGraphCount = (int)o;
-            int visibleFrameCount = 0;
+            visibleFrameCount = 0;
 
             if (isBusy)
             {
@@ -120,24 +126,29 @@ namespace WinTop
                 //update the frames
                 Frame.UpdateFrame(appFrames);
 
-                //update the cpu graph
-                visibleFrameCount += UpdateCPU(cpuGraphCount);
+                var tasks = new Task[]
+                {
+                    //update the cpu graph
+                    UpdateCPU(cpuGraphCount),
 
 
-                //print the disks details
-                visibleFrameCount += UpdateDisk();
+                    //print the disks details
+                    UpdateDisk(),
 
-                //update Memory history
-                visibleFrameCount += UpdateMemory();
+                    //update Memory history
+                    UpdateMemory(),
 
-                //update the temperature frame
-                visibleFrameCount += UpdateTemperature();
+                    //update the temperature frame
+                    UpdateTemperature(),
 
-                //update the process frame
-                visibleFrameCount += UpdateProcesses();
+                    //update the process frame
+                    UpdateProcesses(),
 
-                //update the network frame
-                visibleFrameCount += UpdateNetwork();
+                    //update the network frame
+                    UpdateNetwork(),
+                };
+
+                await Task.WhenAll(tasks);
 
                 //print relevant data
                 if (visibleFrameCount > 0)
@@ -177,16 +188,16 @@ namespace WinTop
         /// </summary>
         /// <param name="cpuGraphCount">number of cpu cores to include in the chart</param>
         /// <returns>1 if the frame is visible</returns>
-        private static int UpdateCPU(int cpuGraphCount)
+        private static Task UpdateCPU(int cpuGraphCount)
         {
 
-            int asVisibleFrame = 0;
+            bool asVisibleFrame = false;
             int frameIndex = (int)Create.ProgramFrame.CpuFrame;
 
             if (appFrames[frameIndex].IsVisible)
             {
 
-                asVisibleFrame = 1;
+                asVisibleFrame = true;
 
                 for (int i = cpuCores.Count - 1; i >= 0; i--)
                 {
@@ -212,34 +223,44 @@ namespace WinTop
                 }
             }
 
-            return asVisibleFrame;
+            if (asVisibleFrame)
+            {
+                visibleFrameCount++;
+            }
+
+            return Task.CompletedTask;
         }
 
         /// <summary>
         /// updates the disk information
         /// </summary>
         /// <returns>1 if the frame is visible</returns>
-        private static int UpdateDisk()
+        private static Task UpdateDisk()
         {
-            int asVisibleFrame = 0;
+            bool asVisibleFrame = false;
             int frameIndex = (int)Create.ProgramFrame.DiskFrame;
             
             if (appFrames[frameIndex].IsVisible)
             {
-                asVisibleFrame = 1;
+                asVisibleFrame = true;
                 Disk.Print(disks, appFrames[frameIndex]);
             }
 
-            return asVisibleFrame;
+            if (asVisibleFrame)
+            {
+                visibleFrameCount++;
+            }
+
+            return Task.CompletedTask;
         }
 
         /// <summary>
         /// updates the memory information
         /// </summary>
         /// <returns>1 if the frame is visible</returns>
-        private static int UpdateMemory()
+        private static Task UpdateMemory()
         {
-            int visibleFrameCount = 0;
+            bool asVisibleFrame = false;
             int frameIndex = (int)Create.ProgramFrame.MemFrame;
 
             memory.Update();
@@ -248,7 +269,7 @@ namespace WinTop
             if (appFrames[frameIndex].IsVisible)
             {
 
-                visibleFrameCount = 1;
+                asVisibleFrame = true;
 
                 memory.AreaChart.UpdatePosition(appFrames[memory.FrameIndex]);
                 memory.AreaChart.PrintChart();
@@ -256,21 +277,26 @@ namespace WinTop
 
             }
 
-            return visibleFrameCount;
+            if (asVisibleFrame)
+            {
+                visibleFrameCount++;
+            }
+
+            return Task.CompletedTask;
         }
 
         /// <summary>
         /// updates the temperature information
         /// </summary>
         /// <returns>1 if the frame is visible</returns>
-        private static int UpdateTemperature()
+        private static Task UpdateTemperature()
         {
-            int asVisibleFrame = 0;
+            bool asVisibleFrame = false;
             int frameIndex = (int)Create.ProgramFrame.TempFrame;
 
             if (appFrames[frameIndex].IsVisible)
             {
-                asVisibleFrame = 1;
+                asVisibleFrame = true;
 
                 foreach(TemperatureSensor temperatureSensor in temperatureSensors)
                 {
@@ -280,24 +306,29 @@ namespace WinTop
                 TemperatureSensor.Print(temperatureSensors, appFrames[frameIndex]);
             }
 
-            return asVisibleFrame;
+            if (asVisibleFrame)
+            {
+                visibleFrameCount++;
+            }
+
+            return Task.CompletedTask;
         }
 
         /// <summary>
         /// updates the process counter information
         /// </summary>
         /// <returns>1 if frame is visible</returns>
-        private static int UpdateProcesses()
+        private static Task UpdateProcesses()
         {
 
             const int FRAME_INDEX = (int)Create.ProgramFrame.PrcFrame;
-            int asVisibleFrame = 0;
+            bool asVisibleFrame = false;
             
 
             if (appFrames[FRAME_INDEX].IsVisible)
             {
 
-                asVisibleFrame = 1;
+                asVisibleFrame = true;
 
                 List<Process> processes = Process.GetProcesses().ToList();
 
@@ -327,13 +358,18 @@ namespace WinTop
 
             }
 
-            return asVisibleFrame;
+            if (asVisibleFrame)
+            {
+                visibleFrameCount++;
+            }
+
+            return Task.CompletedTask;
         }
 
         //not yet implemented
-        private static int UpdateNetwork()
+        private static Task UpdateNetwork()
         {
-            return 0;
+            return Task.CompletedTask;
         }
     }
 } 
